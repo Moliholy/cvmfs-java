@@ -17,7 +17,7 @@ public class Cache {
     public Cache(String cacheDirectoryPath) throws CacheDirectoryNotFound {
         cacheDirectory = new File(cacheDirectoryPath).getAbsoluteFile();
         if (cacheDirectory.isDirectory() && cacheDirectory.canWrite()) {
-
+            createCacheStructure();
         } else {
             throw new CacheDirectoryNotFound(cacheDirectory.toString());
         }
@@ -81,6 +81,7 @@ public class Cache {
         if (dataFile.exists() && dataFile.isDirectory()) {
             try {
                 FileUtils.deleteDirectory(dataFile);
+                createCacheStructure();
             } catch (IOException e) {
                 e.printStackTrace();
             }
