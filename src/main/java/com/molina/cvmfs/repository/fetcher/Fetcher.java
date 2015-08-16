@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.zip.ZipInputStream;
 
 /**
- * Created by Jose Molina Colmenero
+ * @author Jose Molina Colmenero
  */
 public class Fetcher {
     protected Cache cache;

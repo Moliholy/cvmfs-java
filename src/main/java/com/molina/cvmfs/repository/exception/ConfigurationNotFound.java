@@ -1,7 +1,7 @@
 package com.molina.cvmfs.repository.exception;
 
 /**
- * Created by Jose Molina Colmenero
+ * @author Jose Molina Colmenero
  */
 public class ConfigurationNotFound extends Exception {
 

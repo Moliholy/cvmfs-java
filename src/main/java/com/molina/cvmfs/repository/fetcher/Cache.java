@@ -9,7 +9,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 
 /**
- * Created by Jose Molina Colmenero
+ * @author Jose Molina Colmenero
  */
 public class Cache {
     File cacheDirectory;
