@@ -1,4 +1,4 @@
-package com.molina.repository.exception;
+package com.molina.cvmfs.repository.exception;
 
 /**
  * Created by Jose Molina Colmenero

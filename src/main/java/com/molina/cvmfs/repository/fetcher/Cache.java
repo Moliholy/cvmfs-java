@@ -1,7 +1,7 @@
-package com.molina.repository.fetcher;
+package com.molina.cvmfs.repository.fetcher;
 
 
-import com.molina.repository.exception.CacheDirectoryNotFound;
+import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
