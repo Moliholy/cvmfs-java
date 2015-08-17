@@ -13,7 +13,7 @@ public class DatabaseObject {
     protected File databaseFile;
     protected Connection connection;
 
-    public DatabaseObject(File databaseFile) throws SQLException, ClassNotFoundException {
+    public DatabaseObject(File databaseFile) throws SQLException {
         this.databaseFile = databaseFile;
         openDatabase();
     }
@@ -21,8 +21,13 @@ public class DatabaseObject {
     /**
      * Create and configure a database handle to the Catalog
      */
-    protected void openDatabase() throws ClassNotFoundException, SQLException {
-        Class.forName("org.sqlite.JDBC");
+    protected void openDatabase() throws SQLException {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            connection = null;
+            return;
+        }
         connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
         connection.setAutoCommit(false);
     }
