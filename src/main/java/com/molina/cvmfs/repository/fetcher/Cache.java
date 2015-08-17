@@ -12,9 +12,9 @@ import java.io.IOException;
  * @author Jose Molina Colmenero
  */
 public class Cache {
-    File cacheDirectory;
+    protected File cacheDirectory;
 
-    public Cache(String cacheDirectoryPath) throws CacheDirectoryNotFound {
+    public Cache(String cacheDirectoryPath) throws CacheDirectoryNotFound, IOException {
         cacheDirectory = new File(cacheDirectoryPath).getAbsoluteFile();
         if (cacheDirectory.isDirectory() && cacheDirectory.canWrite()) {
             createCacheStructure();
@@ -23,33 +23,32 @@ public class Cache {
         }
     }
 
-    protected void cleanup_metadata() {
+    protected void cleanup_metadata() throws IOException {
         FileFilter fileFilter = new FileFilter() {
             public boolean accept(File pathname) {
                 return pathname.getAbsolutePath().startsWith(".cvmfs");
             }
         };
         for (File f : cacheDirectory.listFiles(fileFilter)) {
-            f.delete();
+            if (!f.delete())
+                throw new IOException(f.getAbsolutePath());
         }
     }
 
     protected boolean createDirectory(String path) {
         String cacheFullPath = cacheDirectory.getAbsolutePath() + File.pathSeparator + path;
         File newDirectory = new File(cacheFullPath);
-        if (!newDirectory.exists() && newDirectory.mkdir()) {
-            return true;
-        }
-        return false;
+        return !newDirectory.exists() && newDirectory.mkdir();
     }
 
-    protected void createCacheStructure() {
+    protected void createCacheStructure() throws IOException {
         createDirectory("data");
         for (int i = 0x00; i <= 0xff; i++) {
             String newFolder = Integer.toHexString(i).substring(2, 4);
             File newFile = new File(cacheDirectory.getAbsolutePath() + File.pathSeparator + "data" +
                     File.pathSeparator + newFolder);
-            newFile.mkdir();
+            if (!newFile.mkdir())
+                throw new IOException("Cannot open " + newFile.getAbsolutePath());
         }
     }
 

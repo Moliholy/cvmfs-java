@@ -1,5 +1,7 @@
 package com.molina.cvmfs.rootfile;
 
+import com.molina.cvmfs.manifest.exception.ManifestValidityError;
+import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 
@@ -36,7 +38,8 @@ public abstract class RootFile {
      * Initializes a root file object form a file pointer
      * @param fileObject file that contains the necessary information to initialize the object
      */
-    public RootFile(File fileObject) throws IOException, IncompleteRootFileSignature, InvalidRootFileSignature {
+    public RootFile(File fileObject) throws IOException, IncompleteRootFileSignature, InvalidRootFileSignature,
+            ManifestValidityError, UnknownManifestField {
         hasSignature = false;
         BufferedReader br = new BufferedReader(new FileReader(fileObject));
         String line;
@@ -102,9 +105,9 @@ public abstract class RootFile {
 
     }
 
-    protected abstract void readLine(String line);
+    protected abstract void readLine(String line) throws UnknownManifestField;
 
-    protected abstract boolean checkValidity();
+    protected abstract void checkValidity() throws ManifestValidityError;
 
     protected abstract boolean verifySignatureFromEntity(String publicEntity);
 }
