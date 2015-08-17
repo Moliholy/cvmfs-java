@@ -1,8 +1,8 @@
 package com.molina.cvmfs.repository;
 
+import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.manifest.Manifest;
-import com.sun.org.apache.xml.internal.resolver.Catalog;
 
 import java.io.File;
 import java.util.Map;
