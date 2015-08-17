@@ -40,6 +40,7 @@ public class DatabaseObject {
         while (rs.next()) {
             result.put(rs.getString(0), rs.getString(1));
         }
+        rs.close();
         return result;
     }
 
@@ -50,6 +51,8 @@ public class DatabaseObject {
      */
     public ResultSet runSQL(String sqlQuery) throws SQLException {
         Statement statement = connection.createStatement();
-        return statement.executeQuery(sqlQuery);
+        ResultSet rs = statement.executeQuery(sqlQuery);
+        statement.close();
+        return rs;
     }
 }
