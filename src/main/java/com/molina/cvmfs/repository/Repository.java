@@ -42,18 +42,18 @@ public abstract class Repository {
 
     public Repository(String source, String cacheDirectory)
             throws FailedToLoadSourceException,
-            MalformedURLException, CacheDirectoryNotFound, ManifestException {
+            IOException, CacheDirectoryNotFound, ManifestException {
         if (source == null || source.isEmpty())
             throw new FailedToLoadSourceException("The source cannot be empty");
         openedCatalogs = new HashMap<String, Catalog>();
         storageLocation = cacheDirectory;
         determineSource(source, cacheDirectory);
+        readManifest();
         try {
-            readManifest();
             tryToGetLastReplicationTimestamp();
             tryToGetReplicationState();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.print("Couldn't retrieve all replication data");
         }
     }
 
@@ -90,15 +90,38 @@ public abstract class Repository {
         if (manifest == null)
             throw new ManifestException();
         fqrn = manifest.getRepositoryName();
-
     }
 
     protected void tryToGetLastReplicationTimestamp() throws IOException {
+        BufferedReader br = null;
+        lastReplication = new Date(0);
+        try {
+            File file = fetcher.retrieveRawFile(Common.LAST_REPLICATION_NAME);
+            br = new BufferedReader(new FileReader(file));
+            String timestamp = br.readLine();
+            lastReplication = new Date(Long.parseLong(timestamp));
+            if (!hasRepositoryType())
+                type = "stratum1";
+        } finally {
+            if (br != null)
+                br.close();
+        }
 
     }
 
-    protected void tryToGetReplicationState() {
-
+    protected void tryToGetReplicationState() throws IOException {
+        BufferedReader br = null;
+        try {
+            replicating = false;
+            File file = fetcher.retrieveRawFile(Common.REPLICATING_NAME);
+            br = new BufferedReader(new FileReader(file));
+            String timestamp = br.readLine();
+            replicating = true;
+            replicatingSince = new Date(Long.parseLong(timestamp));
+        } finally {
+            if (br != null)
+                br.close();
+        }
     }
 
     public boolean verify(String publicKeyPath) {
