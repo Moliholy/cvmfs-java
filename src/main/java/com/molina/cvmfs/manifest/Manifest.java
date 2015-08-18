@@ -34,8 +34,9 @@ public class Manifest extends RootFile {
     protected String microCatalog;
     protected boolean garbageCollectable;
 
-    public Manifest(File fileObject) throws InvalidRootFileSignature, IncompleteRootFileSignature, IOException,
-            ManifestValidityError, UnknownManifestField {
+    public Manifest(File fileObject)
+            throws InvalidRootFileSignature, IncompleteRootFileSignature,
+            IOException, ManifestValidityError, UnknownManifestField {
         super(fileObject);
     }
 
@@ -105,7 +106,8 @@ public class Manifest extends RootFile {
     @Override
     protected void checkValidity() throws ManifestValidityError {
         if (rootCatalog == null)
-            throw new ManifestValidityError("Manifest lacks a root catalog entry");
+            throw new ManifestValidityError(
+                    "Manifest lacks a root catalog entry");
         if (rootHash == null)
             throw new ManifestValidityError("Manifest lacks a root hash entry");
         if (ttl == 0)
