@@ -19,10 +19,10 @@ import java.util.ArrayList;
  */
 public class DirectoryEntry {
 
-    protected String md5path_1;
-    protected String md5path_2;
-    protected String parent_1;
-    protected String parent_2;
+    protected int md5path_1;
+    protected int md5path_2;
+    protected int parent_1;
+    protected int parent_2;
     protected String contentHash;
     protected int flags;
     protected int size;
@@ -33,26 +33,20 @@ public class DirectoryEntry {
     protected ArrayList<Chunk> chunks;
     protected int contentHashType;
 
-    public DirectoryEntry(ResultSet resultSet) throws SQLException,
-            DirectoryEntryCreationException {
+    public DirectoryEntry(ResultSet resultSet) throws SQLException {
         // see DirectoryEntry.catalogDatabaseFields()
         chunks = new ArrayList<Chunk>();
-        if (resultSet.next()){
-            md5path_1 = resultSet.getString("md5path_1");
-            md5path_2 = resultSet.getString("md5path_2");
-            parent_1 = resultSet.getString("parent_1");
-            parent_2 = resultSet.getString("parent_2");
-            contentHash = resultSet.getString("hash");
-            flags = resultSet.getInt("flags");
-            size = resultSet.getInt("size");
-            mode = resultSet.getInt("mode");
-            mtime = resultSet.getLong("mtime");
-            name = resultSet.getString("name");
-            symlink = resultSet.getString("symlink");
-        } else {
-            throw new DirectoryEntryCreationException();
-        }
-        resultSet.close();
+        md5path_1 = resultSet.getInt("md5path_1");
+        md5path_2 = resultSet.getInt("md5path_2");
+        parent_1 = resultSet.getInt("parent_1");
+        parent_2 = resultSet.getInt("parent_2");
+        contentHash = resultSet.getString("hash");
+        flags = resultSet.getInt("flags");
+        size = resultSet.getInt("size");
+        mode = resultSet.getInt("mode");
+        mtime = resultSet.getLong("mtime");
+        name = resultSet.getString("name");
+        symlink = resultSet.getString("symlink");
         readContentHashType();
     }
 
@@ -125,9 +119,61 @@ public class DirectoryEntry {
             contentHashType = ContentHashTypes.UNKNOWN;
     }
 
-    protected static String catalogDatabaseFields() {
+    public static String catalogDatabaseFields() {
         // see the constructor of this class
         return "md5path_1, md5path_2, parent_1, parent_2, hash, flags, " +
                 "size, mode, mtime, name, symlink";
+    }
+
+    public int getMd5path_1() {
+        return md5path_1;
+    }
+
+    public int getMd5path_2() {
+        return md5path_2;
+    }
+
+    public int getParent_1() {
+        return parent_1;
+    }
+
+    public int getParent_2() {
+        return parent_2;
+    }
+
+    public String getContentHash() {
+        return contentHash;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getMode() {
+        return mode;
+    }
+
+    public long getMtime() {
+        return mtime;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSymlink() {
+        return symlink;
+    }
+
+    public ArrayList<Chunk> getChunks() {
+        return chunks;
+    }
+
+    public int getContentHashType() {
+        return contentHashType;
     }
 }
