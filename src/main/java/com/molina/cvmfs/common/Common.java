@@ -1,5 +1,7 @@
 package com.molina.cvmfs.common;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author Jose Molina Colmenero
  */
@@ -19,5 +21,15 @@ public class Common {
         for (byte b : binaryBuffer)
             sb.append(String.format("%02X ", b));
         return sb.toString().toLowerCase();
+    }
+
+    public static PathHash splitMd5(byte[] md5Digest) {
+        int hi = 0;
+        int lo = 0;
+        for (int i = 0; i < 8; i++)
+            lo |= (((int)((char) md5Digest[i])) << (i * 8));
+        for (int i = 8; i < 16; i++)
+            hi |= (((int)((char) md5Digest[i])) << ((i - 8) * 8));
+        return new PathHash(new Long(lo).intValue(), new Long(hi).intValue());
     }
 }

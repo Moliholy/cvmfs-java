@@ -5,19 +5,19 @@ package com.molina.cvmfs.common;
  */
 public class PathHash {
 
-    private String hash1;
-    private String hash2;
+    private int hash1;
+    private int hash2;
 
-    public PathHash(String hash1, String hash2) {
+    public PathHash(int hash1, int hash2) {
         this.hash1 = hash1;
         this.hash2 = hash2;
     }
 
-    public String getHash1() {
+    public int getHash1() {
         return hash1;
     }
 
-    public String getHash2() {
+    public int getHash2() {
         return hash2;
     }
 }
