@@ -39,11 +39,11 @@ public class DatabaseObject {
     /**
      * Retrieve all properties stored in the 'properties' table
      */
-    public Map<String, String> readPropertiesTable() throws SQLException {
+    public Map<String, Object> readPropertiesTable() throws SQLException {
         ResultSet rs = runSQL("SELECT key, value FROM properties;");
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, Object> result = new HashMap<String, Object>();
         while (rs.next()) {
-            result.put(rs.getString(0), rs.getString(1));
+            result.put(rs.getString(0), rs.getObject(1));
         }
         rs.close();
         return result;

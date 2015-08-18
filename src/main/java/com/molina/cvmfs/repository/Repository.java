@@ -82,4 +82,7 @@ public abstract class Repository {
         return null;
     }
 
+    public File retrieveObject(String s) {
+        return null;
+    }
 }
