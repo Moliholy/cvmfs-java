@@ -12,14 +12,14 @@ import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.repository.fetcher.Fetcher;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
+import com.molina.cvmfs.rootfile.exception.RootFileException;
+import com.molina.cvmfs.whitelist.Whitelist;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +42,7 @@ public abstract class Repository {
 
     public Repository(String source, String cacheDirectory)
             throws FailedToLoadSourceException,
-            IOException, CacheDirectoryNotFound, ManifestException {
+            IOException, CacheDirectoryNotFound, RootFileException {
         if (source == null || source.isEmpty())
             throw new FailedToLoadSourceException("The source cannot be empty");
         openedCatalogs = new HashMap<String, Catalog>();
@@ -74,7 +74,7 @@ public abstract class Repository {
         fetcher = new Fetcher(finalSource, cacheDirectory);
     }
 
-    protected void readManifest() throws IOException, ManifestException {
+    protected void readManifest() throws IOException, RootFileException {
         File manifestFile = fetcher.retrieveRawFile(Common.MANIFEST_NAME);
         try {
             manifest = new Manifest(manifestFile);
@@ -125,7 +125,13 @@ public abstract class Repository {
     }
 
     public boolean verify(String publicKeyPath) {
+        Whitelist whitelist = retrieveWhitelist();
+        // TODO
         return false;
+    }
+
+    protected Whitelist retrieveWhitelist() {
+        return null;
     }
 
     public Catalog[] getCatalogs(Catalog rootCatalog) {

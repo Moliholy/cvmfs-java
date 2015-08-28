@@ -6,6 +6,7 @@ import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.RootFile;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
+import com.molina.cvmfs.rootfile.exception.RootFileException;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +35,7 @@ public class Manifest extends RootFile {
     protected String microCatalog;
     protected boolean garbageCollectable;
 
-    public Manifest(File fileObject)
-            throws InvalidRootFileSignature, IncompleteRootFileSignature,
-            IOException, ManifestValidityError, UnknownManifestField {
+    public Manifest(File fileObject) throws RootFileException, IOException {
         super(fileObject);
     }
 
@@ -44,8 +43,8 @@ public class Manifest extends RootFile {
         return historyDatabase != null;
     }
 
-    public static Manifest open(String manifestPath) throws InvalidRootFileSignature, IOException,
-            IncompleteRootFileSignature, ManifestValidityError, UnknownManifestField {
+    public static Manifest open(String manifestPath)
+            throws RootFileException, IOException {
         return new Manifest(new File(manifestPath));
     }
 

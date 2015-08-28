@@ -1,11 +1,10 @@
 package com.molina.cvmfs.rootfile.exception;
 
-import com.molina.cvmfs.common.exceptions.WarningException;
 
 /**
  * @author Jose Molina Colmenero
  */
-public class InvalidRootFileSignature extends WarningException {
+public class InvalidRootFileSignature extends RootFileException {
 
     public InvalidRootFileSignature(String message) {
         super(message);

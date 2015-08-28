@@ -37,10 +37,14 @@ public class Certificate {
         return opensslCertificate;
     }
 
+    public String getFingerPrint() throws CertificateEncodingException {
+        return getFingerPrint("SHA-1");
+    }
+
     public String getFingerPrint(String algorithm) throws CertificateEncodingException {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
-            md = MessageDigest.getInstance("SHA-1");
+            md = MessageDigest.getInstance(algorithm);
         } catch (NoSuchAlgorithmException e) {
             return null;
         }

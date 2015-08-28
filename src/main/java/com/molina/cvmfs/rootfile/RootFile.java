@@ -4,6 +4,7 @@ import com.molina.cvmfs.manifest.exception.ManifestValidityError;
 import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
+import com.molina.cvmfs.rootfile.exception.RootFileException;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -38,8 +39,8 @@ public abstract class RootFile {
      * Initializes a root file object form a file pointer
      * @param fileObject file that contains the necessary information to initialize the object
      */
-    public RootFile(File fileObject) throws IOException, IncompleteRootFileSignature, InvalidRootFileSignature,
-            ManifestValidityError, UnknownManifestField {
+    public RootFile(File fileObject)
+            throws IOException, RootFileException {
         hasSignature = false;
         BufferedReader br = new BufferedReader(new FileReader(fileObject));
         String line;
@@ -50,7 +51,8 @@ public abstract class RootFile {
                 hasSignature = true;
                 signatureChecksum = br.readLine();
                 if (signatureChecksum == null)
-                    throw new IncompleteRootFileSignature("Signature not found");
+                    throw new IncompleteRootFileSignature(
+                            "Signature not found");
                 break;
             }
             readLine(line);
@@ -94,7 +96,9 @@ public abstract class RootFile {
      * Reads the signature's checksum and the binary signature string
      * @param fileObject byte array containing the signature
      */
-    protected void readSignature(File fileObject) throws IOException, IncompleteRootFileSignature, InvalidRootFileSignature {
+    protected void readSignature(File fileObject)
+            throws IOException, IncompleteRootFileSignature,
+            InvalidRootFileSignature {
         if (signatureChecksum.length() != 40)
             throw new IncompleteRootFileSignature("Signature checksum malformed");
         String messageDigest = hashOverContent(fileObject);
@@ -105,9 +109,9 @@ public abstract class RootFile {
 
     }
 
-    protected abstract void readLine(String line) throws UnknownManifestField;
+    protected abstract void readLine(String line) throws RootFileException;
 
-    protected abstract void checkValidity() throws ManifestValidityError;
+    protected abstract void checkValidity() throws RootFileException;
 
     protected abstract boolean verifySignatureFromEntity(String publicEntity);
 }

@@ -5,9 +5,9 @@ import com.molina.cvmfs.common.exceptions.WarningException;
 /**
  * @author Jose Molina Colmenero
  */
-public class IncompleteRootFileSignature extends RootFileException {
+public class RootFileException extends WarningException {
 
-    public IncompleteRootFileSignature(String message) {
+    public RootFileException(String message) {
         super(message);
     }
 }
