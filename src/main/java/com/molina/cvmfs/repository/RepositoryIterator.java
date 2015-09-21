@@ -23,12 +23,16 @@ public class RepositoryIterator {
         this.repository = repository;
         this.catalogStack = new ArrayDeque<CatalogIterator>();
         Catalog rootCatalog;
-        if (catalogHash == null) {
+        if (catalogHash == null || catalogHash.isEmpty()) {
             rootCatalog = repository.retrieveRootCatalog();
         } else {
             rootCatalog = repository.retrieveCatalog(catalogHash);
         }
         pushCatalog(rootCatalog);
+    }
+
+    public RepositoryIterator(Repository repository) {
+        this(repository, null);
     }
 
     public DirectoryEntryWrapper next() throws StopIterationException, NestedCatalogNotFound {
@@ -63,7 +67,7 @@ public class RepositoryIterator {
         pushCatalog(newCatalog);
     }
 
-    private boolean hasMore() {
+    public boolean hasMore() {
         return !catalogStack.isEmpty();
     }
 
