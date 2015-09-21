@@ -39,10 +39,6 @@ public class Catalog extends DatabaseObject {
         return new Catalog(new File(catalogPath), "");
     }
 
-    public float getSchema() {
-        return schema;
-    }
-
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {
         super(databaseFile);
@@ -54,13 +50,17 @@ public class Catalog extends DatabaseObject {
         checkValidity();
     }
 
+    public float getSchema() {
+        return schema;
+    }
+
     /**
      * Check all crucial properties have been found in the database
      */
     protected void checkValidity() throws CatalogInitializationException {
         if (revision == 0)
             throw new CatalogInitializationException(
-                    "Catalog lacks a revisionn entry");
+                    "Catalog lacks a revision entry");
         if (schema == 0.0f)
             throw new CatalogInitializationException(
                     "Catalog lacks a schema entry");
