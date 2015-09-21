@@ -44,10 +44,12 @@ public class Cache {
     protected void createCacheStructure() throws IOException {
         createDirectory("data");
         for (int i = 0x00; i <= 0xff; i++) {
-            String newFolder = Integer.toHexString(i).substring(2, 4);
+            String newFolder = Integer.toHexString(i);
+            if (newFolder.length() == 1)
+                newFolder = "0" + newFolder;
             File newFile = new File(cacheDirectory.getAbsolutePath() + File.pathSeparator + "data" +
                     File.pathSeparator + newFolder);
-            if (!newFile.mkdir())
+            if (!newFile.exists() && !newFile.mkdir())
                 throw new IOException("Cannot open " + newFile.getAbsolutePath());
         }
     }

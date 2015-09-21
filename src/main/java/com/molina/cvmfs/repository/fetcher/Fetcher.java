@@ -90,6 +90,14 @@ public class Fetcher {
         return cache.get(fileName);
     }
 
+    /**
+     * Method to retrieve a file from the cahe if exists, or from
+     * the repository if it doesn't. In case it has to be retrieved from
+     * the repository it won't be decompressed
+     * @param fileName name of the file in the repository
+     * @return a read-only file object that represents the cached file
+     * @throws IOException if the file doesn't exists in the repository
+     */
     public File retrieveRawFile(String fileName) throws IOException {
         File cachedFile = cache.add(fileName);
         String fileURL = makeFileURL(fileName);
