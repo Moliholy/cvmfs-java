@@ -1,6 +1,8 @@
 package com.molina.cvmfs.repository;
 
 import com.molina.cvmfs.catalog.Catalog;
+import com.molina.cvmfs.catalog.CatalogReference;
+import com.molina.cvmfs.catalog.exception.CatalogInitializationException;
 import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.common.Common;
 import com.molina.cvmfs.manifest.Manifest;
@@ -9,27 +11,25 @@ import com.molina.cvmfs.manifest.exception.ManifestValidityError;
 import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
+import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
 import com.molina.cvmfs.repository.fetcher.Fetcher;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 import com.molina.cvmfs.whitelist.Whitelist;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.security.cert.CertificateException;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Jose Molina Colmenero
- *
- * Abstract wrapper around a CVMFS repository representation
+ * Wrapper around a CVMFS repository representation
  */
-public abstract class Repository {
+public class Repository {
     protected Map<String, Catalog> openedCatalogs;
     protected Manifest manifest;
     protected String fqrn;
@@ -59,7 +59,7 @@ public abstract class Repository {
 
     private void determineSource(String source, String cacheDirectory)
             throws FailedToLoadSourceException,
-            MalformedURLException, CacheDirectoryNotFound {
+            IOException, CacheDirectoryNotFound {
         String finalSource;
         String serverDefaultLocation = "/srv/cvmfs/";
         if (source.startsWith("http://"))
@@ -159,7 +159,7 @@ public abstract class Repository {
     public boolean verify(String publicKeyPath) {
         Whitelist whitelist = retrieveWhitelist();
         // TODO
-        return false;
+        return true;
     }
 
     protected Whitelist retrieveWhitelist() {
@@ -178,33 +178,78 @@ public abstract class Repository {
         return manifest.hasHistory();
     }
 
-    public Certificate retrieveCertificate() {
-        return null;
+    public Certificate retrieveCertificate()
+            throws FileNotFoundInRepository, CertificateException, FileNotFoundException {
+        File certificate = retrieveObject(manifest.getCertificate(), 'X');
+        return new Certificate(certificate);
     }
 
-    public abstract File retrieveObject(String objectHash, char hash_suffix);
+    /**
+     * Retrieves an object from the content addressable storage
+     * @param objectHash hash of the object
+     * @param hash_suffix suffix of the object
+     * @return the object, if exists in the repository
+     */
+    public File retrieveObject(String objectHash, char hash_suffix) throws FileNotFoundInRepository {
+        String path = "data/" + objectHash.substring(0, 2) + "/" +
+                objectHash.substring(2, objectHash.length()) + hash_suffix;
+        return fetcher.retrieveFile(path);
+    }
+
+    public File retrieveObject(String objectHash) throws FileNotFoundInRepository {
+        return retrieveObject(objectHash, '\0');
+    }
 
     public Catalog retrieveRootCatalog() {
         return retrieveCatalog(manifest.getRootCatalog());
     }
 
+    /**
+     * Recursively walk down the Catalogs and find the best fit for a path
+     * @param needlePath path of the catalog
+     * @return the catalog for the given path
+     */
     public Catalog retrieveCatalogForPath(String needlePath) {
-        return null;
+        Catalog root = retrieveRootCatalog();
+        while (true) {
+            CatalogReference newNestedReference = root.findNestedForPath(needlePath);
+            if (newNestedReference == null)
+                break;
+            root = retrieveCatalog(newNestedReference.getCatalogHash());
+        }
+        return root;
     }
 
     public void closeCatalog(Catalog catalog) {
-
+        catalog.close();
     }
 
+    /**
+     * Download and open a catalog from the repository
+     * @param catalogHash hash of the catalog to download
+     * @return the catalog that corresponds to the hash
+     */
     public Catalog retrieveCatalog(String catalogHash) {
-        return null;
+        if (openedCatalogs.containsKey(catalogHash))
+            return openedCatalogs.get(catalogHash);
+        return retrieveAndOpenCatalog(catalogHash);
     }
 
     protected Catalog retrieveAndOpenCatalog(String catalogHash) {
+        File catalogFile;
+        try {
+            catalogFile = retrieveObject(catalogHash, 'C');
+            Catalog newCatalog = new Catalog(catalogFile, catalogHash);
+            openedCatalogs.put(catalogHash, newCatalog);
+            return newCatalog;
+        } catch (FileNotFoundInRepository e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (CatalogInitializationException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
-    public File retrieveObject(String s) {
-        return null;
-    }
 }
