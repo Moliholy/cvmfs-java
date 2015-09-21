@@ -15,7 +15,7 @@ public class Fetcher {
     protected Cache cache;
     protected URL source;
 
-    public Fetcher(String source, String cacheDirectory) throws CacheDirectoryNotFound, MalformedURLException {
+    public Fetcher(String source, String cacheDirectory) throws CacheDirectoryNotFound, IOException {
         this.cache = new Cache(cacheDirectory);
         File f = new File(source);
         if (f.exists() && f.isDirectory()) {
