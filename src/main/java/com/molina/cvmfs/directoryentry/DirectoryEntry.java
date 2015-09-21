@@ -6,6 +6,7 @@ import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 import com.molina.cvmfs.directoryentry.exception.DirectoryEntryCreationException;
 import com.molina.cvmfs.directoryentry.exception.DirectoryEntryInvalidObject;
 import com.molina.cvmfs.repository.Repository;
+import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -51,7 +52,7 @@ public class DirectoryEntry {
     }
 
     public File retrieveFrom(Repository repository)
-            throws DirectoryEntryInvalidObject {
+            throws DirectoryEntryInvalidObject, FileNotFoundInRepository {
         if (isSymplink() || isDirectory())
             throw new DirectoryEntryInvalidObject();
         return repository.retrieveObject(contentHashString());
