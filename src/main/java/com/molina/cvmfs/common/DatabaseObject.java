@@ -32,6 +32,14 @@ public class DatabaseObject {
         connection.setAutoCommit(false);
     }
 
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public long databaseSize() {
         return databaseFile.length();
     }
