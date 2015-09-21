@@ -124,6 +124,38 @@ public abstract class Repository {
         }
     }
 
+    public String getFqrn() {
+        return fqrn;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Date getReplicatingSince() {
+        return replicatingSince;
+    }
+
+    public Date getLastReplication() {
+        return lastReplication;
+    }
+
+    public boolean isReplicating() {
+        return replicating;
+    }
+
+    public String getStorageLocation() {
+        return storageLocation;
+    }
+
+    public Fetcher getFetcher() {
+        return fetcher;
+    }
+
+    public Manifest getManifest() {
+        return manifest;
+    }
+
     public boolean verify(String publicKeyPath) {
         Whitelist whitelist = retrieveWhitelist();
         // TODO

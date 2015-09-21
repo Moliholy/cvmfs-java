@@ -98,6 +98,30 @@ public class Catalog extends DatabaseObject {
         }
     }
 
+    public float getSchemaRevision() {
+        return schemaRevision;
+    }
+
+    public int getRevision() {
+        return revision;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public String getRootPrefix() {
+        return rootPrefix;
+    }
+
+    public int getPreviousRevision() {
+        return previousRevision;
+    }
+
     protected void readProperty(String key, Object value){
         if (key.equals("revision"))
             revision = (Integer) value;
@@ -109,12 +133,17 @@ public class Catalog extends DatabaseObject {
             lastModified = new Date((Long) value);
         else if (key.equals("previous_revision"))
             previousRevision = (Integer) value;
+
         else if (key.equals("root_prefix"))
             rootPrefix = (String) value;
     }
 
     public boolean hasNested() {
         return nestedCount() > 0;
+    }
+
+    public boolean isRoot() {
+        return rootPrefix.equals("/");
     }
 
     /**
