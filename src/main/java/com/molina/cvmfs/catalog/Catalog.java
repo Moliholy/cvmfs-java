@@ -10,14 +10,15 @@ import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
 import javax.crypto.Mac;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -215,7 +216,7 @@ public class Catalog extends DatabaseObject {
         CatalogReference[] catalogRefs = listNested();
         CatalogReference bestMatch = null;
         int bestMatchScore = 0;
-        String realNeedlePath = cannonicalizePath(needlePath);
+        String realNeedlePath = canonicalizePath(needlePath);
         for (CatalogReference nestedCatalog : catalogRefs) {
             if (realNeedlePath.startsWith(nestedCatalog.getRootPath()) &&
                     nestedCatalog.getRootPath().length() > bestMatchScore) {
@@ -232,7 +233,7 @@ public class Catalog extends DatabaseObject {
      * @return a list with all the DirectoryEntries contained in that path
      */
     public DirectoryEntry[] listDirectory(String path) {
-        String realPath = cannonicalizePath(path);
+        String realPath = canonicalizePath(path);
         try {
             Mac md5Mac = Mac.getInstance("MD5");
             PathHash parentHash = Common.splitMd5(
@@ -251,14 +252,15 @@ public class Catalog extends DatabaseObject {
      * @param parent1 first part of the parent MD5 hash
      * @param parent2 second part of the parent MD5 hash
      */
-    public DirectoryEntry[] listDirectorySplitMd5(Integer parent1,
-                                                  Integer parent2)
+    public DirectoryEntry[] listDirectorySplitMd5(Long parent1,
+                                                  Long parent2)
             throws SQLException {
-        ResultSet rs = runSQL("SELECT " +
+        String queryString = "SELECT " +
                 DirectoryEntry.catalogDatabaseFields() + " FROM catalog " +
                 "WHERE parent_1 = " + parent1.toString() +
                 " AND parent_2 = " + parent2.toString() +
-                " ORDER BY name ASC;");
+                " ORDER BY name ASC;";
+        ResultSet rs = runSQL(queryString);
         ArrayList<DirectoryEntry> arr = new ArrayList<DirectoryEntry>();
         while (rs.next()) {
             arr.add(makeDirectoryEntry(rs));
@@ -283,9 +285,9 @@ public class Catalog extends DatabaseObject {
         ResultSet rs = runSQL("SELECT " + Chunk.catalogDatabaseFields() +
                         " FROM chunks " +
                         "WHERE md5path_1 = " +
-                        Integer.toString(dirent.getMd5path_1()) +
+                        Long.toString(dirent.getMd5path_1()) +
                         " AND md5path_2 = " +
-                        Integer.toString(dirent.getMd5path_2()) +
+                        Long.toString(dirent.getMd5path_2()) +
                         " ORDER BY offset ASC");
         try {
             dirent.addChunks(rs);
@@ -294,9 +296,61 @@ public class Catalog extends DatabaseObject {
         }
     }
 
-    private static String cannonicalizePath(String path) {
-        if (path == null)
+    private static String canonicalizePath(String path) {
+        if (path == null || path.isEmpty())
             return "";
-        return new File(path).getAbsolutePath();
+        try {
+            return new URI(path).normalize().getPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * Finds the DirectoryEntry for a given path
+     * @param rootPath relative path of the DirectoryEntry to find
+     * @return the DirectoryEntry that corresponds to path, or null if not found
+     */
+    public DirectoryEntry findDirectoryEntry(String rootPath) {
+        String realPath = canonicalizePath(rootPath);
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] md5Path = md.digest(realPath.getBytes());
+            return findDirectoryEntryMd5(md5Path);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Finds a DirectoryEntry for a given Md5 hashed path
+     * @param md5Path md5 path of the DirectoryEntry to find
+     * @return the DirectoryEntry that corresponds to md5Path, or null if not found
+     */
+    private DirectoryEntry findDirectoryEntryMd5(byte[] md5Path) {
+        PathHash pathHash = Common.splitMd5(md5Path);
+        return findDirectoryEntrySplitMd5(pathHash);
+    }
+
+    /**
+     * Finds the DirectoryEnry for the given splitMd5 hashed path
+     * @param pathHash split md5 hashed path of the DirectoryEntry to find
+     * @return the DirectoryEntry that corresponds to pathHash, or null if not found
+     */
+    private DirectoryEntry findDirectoryEntrySplitMd5(PathHash pathHash) {
+        try {
+            String query =  "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+                            " FROM catalog" +
+                            " WHERE md5path_1 = " + pathHash.getHash1() + " AND" +
+                            " md5path_2 = " + pathHash.getHash2() +
+                            " LIMIT 1;";
+            ResultSet res = runSQL(query);
+            return makeDirectoryEntry(res);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
