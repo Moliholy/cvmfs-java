@@ -38,7 +38,7 @@ public class RepositoryIterator {
     public DirectoryEntryWrapper next() throws StopIterationException, NestedCatalogNotFound {
         DirectoryEntryWrapper result = getNextDirent();
         DirectoryEntry dirent = result.getDirectoryEntry();
-        if (!dirent.isNestedCatalogMountpoint()) {
+        if (dirent.isNestedCatalogMountpoint()) {
             fetchAndPushCatalog(result.getPath());
             return next();
         }
@@ -51,7 +51,7 @@ public class RepositoryIterator {
         } catch (StopIterationException e) {
             popCatalog();
             if (!hasMore()) {
-                throw new StopIterationException();
+                throw e;
             }
             return getNextDirent();
         }
