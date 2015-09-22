@@ -24,13 +24,13 @@ public class MainTest {
                 repo.getManifest().getRevision() + "    " +
                 repo.getManifest().getLastModified());
         Catalog rootCatalog = repo.retrieveRootCatalog();
-        System.out.println("Catalog schema: " + rootCatalog.getSchema());
+        System.out.println("Catalog schema: " + rootCatalog.getSchema() + "\n");
 
         for (CatalogReference nestedCatalogRef : rootCatalog.listNested()) {
             System.out.println("Nested catalog at: " + nestedCatalogRef.getRootPath());
         }
 
-        System.out.println("Listing repository");
+        System.out.println("\nListing repository");
         RepositoryIterator iterator = new RepositoryIterator(repo);
         while (iterator.hasMore()) {
             DirectoryEntryWrapper wrapper = iterator.next();

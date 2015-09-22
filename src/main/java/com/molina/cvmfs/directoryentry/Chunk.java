@@ -20,7 +20,7 @@ public class Chunk {
             throw new ChunkFileDoesNotMatch();
         this.offset = (Integer) chunkData[2];
         this.size = (Integer) chunkData[3];
-        this.contentHash = (String) chunkData[4];
+        this.contentHash = new String((byte[])chunkData[4]);
         this.contentHashType = contentHashType;
     }
 
