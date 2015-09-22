@@ -1,6 +1,8 @@
 package com.molina.cvmfs.common;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * @author Jose Molina Colmenero
@@ -24,12 +26,13 @@ public class Common {
     }
 
     public static PathHash splitMd5(byte[] md5Digest) {
-        int hi = 0;
-        int lo = 0;
+        long hi = 0;
+        long lo = 0;
         for (int i = 0; i < 8; i++)
-            lo |= (((int)((char) md5Digest[i])) << (i * 8));
-        for (int i = 8; i < 16; i++)
-            hi |= (((int)((char) md5Digest[i])) << ((i - 8) * 8));
-        return new PathHash(new Long(lo).intValue(), new Long(hi).intValue());
+            lo |= ((long)(md5Digest[i] & 0xFF)) << (i * 8);
+        for (int i = 8; i < 16; i++) {
+            hi |= ((long)(md5Digest[i] & 0xFF)) << ((i - 8) * 8);
+        }
+        return new PathHash(lo, hi);
     }
 }
