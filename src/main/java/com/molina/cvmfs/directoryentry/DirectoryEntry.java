@@ -20,10 +20,10 @@ import java.util.ArrayList;
  */
 public class DirectoryEntry {
 
-    protected int md5path_1;
-    protected int md5path_2;
-    protected int parent_1;
-    protected int parent_2;
+    protected long md5path_1;
+    protected long md5path_2;
+    protected long parent_1;
+    protected long parent_2;
     protected String contentHash;
     protected int flags;
     protected int size;
@@ -37,10 +37,10 @@ public class DirectoryEntry {
     public DirectoryEntry(ResultSet resultSet) throws SQLException {
         // see DirectoryEntry.catalogDatabaseFields()
         chunks = new ArrayList<Chunk>();
-        md5path_1 = resultSet.getInt("md5path_1");
-        md5path_2 = resultSet.getInt("md5path_2");
-        parent_1 = resultSet.getInt("parent_1");
-        parent_2 = resultSet.getInt("parent_2");
+        md5path_1 = resultSet.getLong("md5path_1");
+        md5path_2 = resultSet.getLong("md5path_2");
+        parent_1 = resultSet.getLong("parent_1");
+        parent_2 = resultSet.getLong("parent_2");
         contentHash = resultSet.getString("hash");
         flags = resultSet.getInt("flags");
         size = resultSet.getInt("size");
@@ -126,19 +126,19 @@ public class DirectoryEntry {
                 "size, mode, mtime, name, symlink";
     }
 
-    public int getMd5path_1() {
+    public long getMd5path_1() {
         return md5path_1;
     }
 
-    public int getMd5path_2() {
+    public long getMd5path_2() {
         return md5path_2;
     }
 
-    public int getParent_1() {
+    public long getParent_1() {
         return parent_1;
     }
 
-    public int getParent_2() {
+    public long getParent_2() {
         return parent_2;
     }
 
