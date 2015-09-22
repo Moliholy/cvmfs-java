@@ -16,6 +16,9 @@ public class Cache {
 
     public Cache(String cacheDirectoryPath) throws CacheDirectoryNotFound, IOException {
         cacheDirectory = new File(cacheDirectoryPath).getAbsoluteFile();
+        if (!cacheDirectory.exists()) {
+            cacheDirectory.mkdirs();
+        }
         if (cacheDirectory.isDirectory() && cacheDirectory.canWrite()) {
             createCacheStructure();
         } else {
@@ -36,7 +39,7 @@ public class Cache {
     }
 
     protected boolean createDirectory(String path) {
-        String cacheFullPath = cacheDirectory.getAbsolutePath() + File.pathSeparator + path;
+        String cacheFullPath = cacheDirectory.getAbsolutePath() + File.separator + path;
         File newDirectory = new File(cacheFullPath);
         return !newDirectory.exists() && newDirectory.mkdir();
     }
@@ -47,8 +50,8 @@ public class Cache {
             String newFolder = Integer.toHexString(i);
             if (newFolder.length() == 1)
                 newFolder = "0" + newFolder;
-            File newFile = new File(cacheDirectory.getAbsolutePath() + File.pathSeparator + "data" +
-                    File.pathSeparator + newFolder);
+            File newFile = new File(cacheDirectory.getAbsolutePath() + File.separator + "data" +
+                    File.separator + newFolder);
             if (!newFile.exists() && !newFile.mkdir())
                 throw new IOException("Cannot open " + newFile.getAbsolutePath());
         }
@@ -60,11 +63,7 @@ public class Cache {
 
     public File add(String fileName) {
         String fullPath = cacheDirectory.getAbsolutePath() + File.separator + fileName;
-        File file = new File(fullPath);
-        if (!file.isFile()) {  // we return the file if it doesn't exist
-            return file;
-        }
-        return null;
+        return new File(fullPath);
     }
 
     public File get(String fileName) {
