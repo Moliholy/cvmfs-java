@@ -51,7 +51,7 @@ public class DatabaseObject {
         ResultSet rs = runSQL("SELECT key, value FROM properties;");
         Map<String, Object> result = new HashMap<String, Object>();
         while (rs.next()) {
-            result.put(rs.getString(0), rs.getObject(1));
+            result.put(rs.getString(1), rs.getObject(2));
         }
         rs.close();
         return result;
@@ -64,8 +64,6 @@ public class DatabaseObject {
      */
     public ResultSet runSQL(String sqlQuery) throws SQLException {
         Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery(sqlQuery);
-        statement.close();
-        return rs;
+        return statement.executeQuery(sqlQuery);
     }
 }

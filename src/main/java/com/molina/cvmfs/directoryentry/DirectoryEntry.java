@@ -100,8 +100,8 @@ public class DirectoryEntry {
         chunks.clear();
         while (resultSet.next()) {
             Object[] chunkData = new Object[5];
-            for (int i=0; i < chunkData.length; i++)
-                chunkData[i] = resultSet.getObject(i);
+            for (int i = 0; i < chunkData.length; i++)
+                chunkData[i] = resultSet.getObject(i + 1);
             chunks.add(new Chunk(chunkData, contentHashType));
         }
     }

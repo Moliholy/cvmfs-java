@@ -13,8 +13,11 @@ import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,7 +35,7 @@ public class Catalog extends DatabaseObject {
     protected String hash;
     protected Date lastModified;
     protected String rootPrefix;
-    protected int previousRevision;
+    protected String previousRevision;
 
     public static Catalog open(String catalogPath)
             throws SQLException, CatalogInitializationException {
@@ -118,21 +121,23 @@ public class Catalog extends DatabaseObject {
         return rootPrefix;
     }
 
-    public int getPreviousRevision() {
+    public String getPreviousRevision() {
         return previousRevision;
     }
 
     protected void readProperty(String key, Object value){
         if (key.equals("revision"))
-            revision = (Integer) value;
+            revision = Integer.valueOf((String) value);
         else if (key.equals("schema"))
-            schema = (Float) value;
+            schema = Float.valueOf((String) value);
         else if (key.equals("schema_revision"))
-            schemaRevision = (Float) value;
-        else if (key.equals("last_modified"))
-            lastModified = new Date((Long) value);
+            schemaRevision = Float.valueOf((String) value);
+        else if (key.equals("last_modified")) {
+            Long valueLong = Long.valueOf((String) value);
+            lastModified = new Date(valueLong);
+        }
         else if (key.equals("previous_revision"))
-            previousRevision = (Integer) value;
+            previousRevision = (String) value;
 
         else if (key.equals("root_prefix"))
             rootPrefix = (String) value;
@@ -151,12 +156,12 @@ public class Catalog extends DatabaseObject {
      * @return the number of nested catalogs in this catalog
      */
     public int nestedCount(){
-        ResultSet rs = null;
+        ResultSet rs;
         int numCatalogs = 0;
         try {
             rs = runSQL("SELECT count(*) FROM nested_catalogs;");
             if (rs.next())
-                numCatalogs = rs.getInt(0);
+                numCatalogs = rs.getInt(1);
         } catch (SQLException e) {
             return 0;
         }
@@ -180,11 +185,11 @@ public class Catalog extends DatabaseObject {
         try {
             rs = runSQL(sqlQuery);
             while (rs.next()) {
-                String path = rs.getString(0);
-                String sha1 = rs.getString(1);
+                String path = rs.getString(1);
+                String sha1 = rs.getString(2);
                 int size = 0;
                 if (newVersion)
-                    size = rs.getInt(2);
+                    size = rs.getInt(3);
                 arr.add(new CatalogReference(path, sha1, size));
             }
         } catch (SQLException e) {
@@ -284,7 +289,8 @@ public class Catalog extends DatabaseObject {
                         " ORDER BY offset ASC");
         try {
             dirent.addChunks(rs);
-        } catch (ChunkFileDoesNotMatch chunkFileDoesNotMatch) {
+        } catch (ChunkFileDoesNotMatch e) {
+            e.printStackTrace();
         }
     }
 
