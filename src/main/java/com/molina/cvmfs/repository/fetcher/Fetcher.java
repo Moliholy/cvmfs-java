@@ -6,7 +6,8 @@ import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.zip.ZipInputStream;
+import java.net.URLConnection;
+import java.util.zip.*;
 
 /**
  * @author Jose Molina Colmenero
@@ -31,23 +32,18 @@ public class Fetcher {
 
     private static void decompress(InputStream is, File cachedFile) throws IOException {
         int bufferSize = 2048;
-        ZipInputStream zis = null;
+        byte[] inputBuffer = new byte[bufferSize];
+        FileOutputStream fos = new FileOutputStream(cachedFile);
+        BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize);
+        InflaterInputStream decompresserStream = new InflaterInputStream(new BufferedInputStream(is));
+        int bytesRead;
         try {
-            zis = new ZipInputStream(new BufferedInputStream(is));
-            if (zis.getNextEntry() != null) {
-                int count;
-                byte data[] = new byte[bufferSize];
-                // write the files to the disk
-                FileOutputStream fos = new FileOutputStream(cachedFile);
-                BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize);
-                while ((count = zis.read(data, 0, bufferSize)) != -1) {
-                    dest.write(data, 0, count);
-                }
-                dest.close();
+            while ((bytesRead = decompresserStream.read(inputBuffer)) != -1) {
+                dest.write(inputBuffer, 0, bytesRead);
             }
         } finally {
-            if (zis != null)
-                zis.close();
+            dest.close();
+            decompresserStream.close();
         }
 
     }
@@ -75,8 +71,9 @@ public class Fetcher {
 
     protected static void downloadContentAndDecompress(File cachedFile, String fileURL) throws IOException {
         URL url = new URL(fileURL);
-        InputStream openStream = url.openStream();
-        Fetcher.decompress(openStream, cachedFile);
+        URLConnection connection = url.openConnection();
+        InputStream rawStream = connection.getInputStream();
+        Fetcher.decompress(rawStream, cachedFile);
     }
 
     protected File retrieveFileFromSource(String fileName) throws FileNotFoundInRepository {
