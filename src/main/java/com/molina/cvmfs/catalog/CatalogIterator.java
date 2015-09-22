@@ -25,7 +25,9 @@ public class CatalogIterator {
         if (!this.catalog.isRoot()) {
             rootPath = this.catalog.getRootPrefix();
         }
-
+        DirectoryEntryWrapper rootFile =
+                new DirectoryEntryWrapper(catalog.findDirectoryEntry(rootPath), rootPath);
+        push(rootFile);
     }
 
     public Catalog getCatalog() {
