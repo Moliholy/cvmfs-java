@@ -22,8 +22,12 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -98,10 +102,13 @@ public class Repository {
         try {
             File file = fetcher.retrieveRawFile(Common.LAST_REPLICATION_NAME);
             br = new BufferedReader(new FileReader(file));
-            String timestamp = br.readLine();
-            lastReplication = new Date(Long.parseLong(timestamp));
+            String dateString = br.readLine();
+            lastReplication = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy",
+                    Locale.ENGLISH).parse(dateString);
             if (!hasRepositoryType())
                 type = "stratum1";
+        } catch (ParseException e) {
+            lastReplication = null;
         } finally {
             if (br != null)
                 br.close();
@@ -115,9 +122,12 @@ public class Repository {
             replicating = false;
             File file = fetcher.retrieveRawFile(Common.REPLICATING_NAME);
             br = new BufferedReader(new FileReader(file));
-            String timestamp = br.readLine();
+            String dateString = br.readLine();
             replicating = true;
-            replicatingSince = new Date(Long.parseLong(timestamp));
+            replicatingSince = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy",
+                    Locale.ENGLISH).parse(dateString);
+        } catch (ParseException e) {
+            replicatingSince = null;
         } finally {
             if (br != null)
                 br.close();
