@@ -1,33 +1,34 @@
 package com.molina.cvmfs.rootfile;
 
-import com.molina.cvmfs.manifest.exception.ManifestValidityError;
-import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Base class for CernVM-FS repository's signed 'root files'
- *
- * A CernVM-FS repository has essential 'root files' that have a defined name and
- * serve as entry points into the repository.
- * Namely the manifest (.cvmfspublished) and the whitelist (.cvmfswhitelist) that
- * both have class representations inheriting from RootFile and implementing the
- * abstract methods defined here.
- * Any 'root file' in CernVM-FS is a signed list of line-by-line key-value pairs
- * where the key is represented by a single character in the beginning of a line
- * directly followed by the value. The key-value part of the file is terminted
- * either by EOF or by a termination line (--) followed by a signature.
- * The signature follows directly after the termination line with a hash of the
- * key-value line content (without the termination line) followed by an \n and a
- * binary string containing the private-key signature terminated by EOF.
+ *         <p/>
+ *         Base class for CernVM-FS repository's signed 'root files'
+ *         <p/>
+ *         A CernVM-FS repository has essential 'root files' that have a defined name and
+ *         serve as entry points into the repository.
+ *         Namely the manifest (.cvmfspublished) and the whitelist (.cvmfswhitelist) that
+ *         both have class representations inheriting from RootFile and implementing the
+ *         abstract methods defined here.
+ *         Any 'root file' in CernVM-FS is a signed list of line-by-line key-value pairs
+ *         where the key is represented by a single character in the beginning of a line
+ *         directly followed by the value. The key-value part of the file is terminted
+ *         either by EOF or by a termination line (--) followed by a signature.
+ *         The signature follows directly after the termination line with a hash of the
+ *         key-value line content (without the termination line) followed by an \n and a
+ *         binary string containing the private-key signature terminated by EOF.
  */
 public abstract class RootFile {
 
@@ -37,6 +38,7 @@ public abstract class RootFile {
 
     /**
      * Initializes a root file object form a file pointer
+     *
      * @param fileObject file that contains the necessary information to initialize the object
      */
     public RootFile(File fileObject)
@@ -94,6 +96,7 @@ public abstract class RootFile {
 
     /**
      * Reads the signature's checksum and the binary signature string
+     *
      * @param fileObject byte array containing the signature
      */
     protected void readSignature(File fileObject)

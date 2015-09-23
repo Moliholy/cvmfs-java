@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * @author Jose Molina Colmenero
- * Provides convenience data wrapper around catalog statistics
+ *         Provides convenience data wrapper around catalog statistics
  */
 public class CatalogStatistics {
 

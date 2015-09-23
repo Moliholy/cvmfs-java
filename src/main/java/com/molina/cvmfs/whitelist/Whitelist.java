@@ -1,8 +1,6 @@
 package com.molina.cvmfs.whitelist;
 
 import com.molina.cvmfs.certificate.Certificate;
-import com.molina.cvmfs.manifest.exception.ManifestValidityError;
-import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.RootFile;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 
@@ -43,6 +41,7 @@ public class Whitelist extends RootFile {
 
     /**
      * Checks if the whitelist has expired
+     *
      * @return true if the whitelist has expired, or false otherwise
      */
     public boolean hasExpired() {
@@ -52,6 +51,7 @@ public class Whitelist extends RootFile {
 
     /**
      * Lookup a certificate fingerprint in the whitelist
+     *
      * @param certificate certificate to check
      * @return true if the certificate fingerprint is in the whitelist
      */
@@ -66,6 +66,7 @@ public class Whitelist extends RootFile {
 
     /**
      * Parses lines that appear in .cvmfswhitelist
+     *
      * @param line line of .cvmfswhitelist to be parsed
      * @throws RootFileException if a
      */

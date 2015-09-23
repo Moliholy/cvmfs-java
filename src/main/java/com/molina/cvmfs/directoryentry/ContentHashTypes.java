@@ -2,8 +2,8 @@ package com.molina.cvmfs.directoryentry;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Enumeration of supported content hash types
+ *         <p/>
+ *         Enumeration of supported content hash types
  */
 public class ContentHashTypes {
 
@@ -15,6 +15,7 @@ public class ContentHashTypes {
 
     /**
      * Figures out the hash suffix in CVMFS's CAS
+     *
      * @param contentHashType hash type to analyze
      * @return the hash suffix that corresponds to the contentHashType
      */

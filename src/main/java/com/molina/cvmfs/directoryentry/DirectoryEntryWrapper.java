@@ -15,12 +15,12 @@ public class DirectoryEntryWrapper {
         return directoryEntry;
     }
 
-    public String getPath() {
-        return path;
-    }
-
     public void setDirectoryEntry(DirectoryEntry directoryEntry) {
         this.directoryEntry = directoryEntry;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public void setPath(String path) {

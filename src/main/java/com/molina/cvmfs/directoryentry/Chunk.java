@@ -4,8 +4,8 @@ import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Wrapper around file chunks in the CVMFS catalogs
+ *         <p/>
+ *         Wrapper around file chunks in the CVMFS catalogs
  */
 public class Chunk {
 
@@ -20,8 +20,12 @@ public class Chunk {
             throw new ChunkFileDoesNotMatch();
         this.offset = (Integer) chunkData[2];
         this.size = (Integer) chunkData[3];
-        this.contentHash = new String((byte[])chunkData[4]);
+        this.contentHash = new String((byte[]) chunkData[4]);
         this.contentHashType = contentHashType;
+    }
+
+    public static String catalogDatabaseFields() {
+        return "md5path_1, md5path_2, offset, size, hash";
     }
 
     public String contentHashString() {
@@ -30,9 +34,5 @@ public class Chunk {
         for (byte b : contentHash.getBytes())
             sb.append(String.format("%02X ", b));
         return sb.toString().toLowerCase() + suffix;
-    }
-
-    public static String catalogDatabaseFields() {
-        return "md5path_1, md5path_2, offset, size, hash";
     }
 }

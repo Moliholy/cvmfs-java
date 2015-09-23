@@ -3,7 +3,6 @@ package com.molina.cvmfs.directoryentry;
 import com.molina.cvmfs.common.Common;
 import com.molina.cvmfs.common.PathHash;
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
-import com.molina.cvmfs.directoryentry.exception.DirectoryEntryCreationException;
 import com.molina.cvmfs.directoryentry.exception.DirectoryEntryInvalidObject;
 import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
@@ -15,8 +14,8 @@ import java.util.ArrayList;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Wrapper around a DirectoryEntry as it is saved in the Catalogs
+ *         <p/>
+ *         Wrapper around a DirectoryEntry as it is saved in the Catalogs
  */
 public class DirectoryEntry {
 
@@ -49,6 +48,12 @@ public class DirectoryEntry {
         name = resultSet.getString("name");
         symlink = resultSet.getString("symlink");
         readContentHashType();
+    }
+
+    public static String catalogDatabaseFields() {
+        // see the constructor of this class
+        return "md5path_1, md5path_2, parent_1, parent_2, hash, flags, " +
+                "size, mode, mtime, name, symlink";
     }
 
     public File retrieveFrom(Repository repository)
@@ -118,12 +123,6 @@ public class DirectoryEntry {
             contentHashType = hashType;
         else
             contentHashType = ContentHashTypes.UNKNOWN;
-    }
-
-    public static String catalogDatabaseFields() {
-        // see the constructor of this class
-        return "md5path_1, md5path_2, parent_1, parent_2, hash, flags, " +
-                "size, mode, mtime, name, symlink";
     }
 
     public long getMd5path_1() {

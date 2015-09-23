@@ -59,6 +59,7 @@ public class DatabaseObject {
 
     /**
      * Run an arbitrary SQL query on the catalog database
+     *
      * @param sqlQuery query to run in the database
      * @return the ResultSet obtained after executing the query
      */

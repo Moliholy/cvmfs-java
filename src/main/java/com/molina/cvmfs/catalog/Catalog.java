@@ -17,13 +17,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Wraps the basic functionality of CernVM-FS Catalogs
+ *         <p/>
+ *         Wraps the basic functionality of CernVM-FS Catalogs
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
 
@@ -37,11 +39,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     protected String rootPrefix;
     protected String previousRevision;
 
-    public static Catalog open(String catalogPath)
-            throws SQLException, CatalogInitializationException {
-        return new Catalog(new File(catalogPath), "");
-    }
-
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {
         super(databaseFile);
@@ -51,6 +48,22 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         guessRootPrefixIfNeeded();
         guessLastModifiedIfNeeded();
         checkValidity();
+    }
+
+    public static Catalog open(String catalogPath)
+            throws SQLException, CatalogInitializationException {
+        return new Catalog(new File(catalogPath), "");
+    }
+
+    private static String canonicalizePath(String path) {
+        if (path == null || path.isEmpty())
+            return "";
+        try {
+            return new URI(path).normalize().getPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public float getSchema() {
@@ -96,7 +109,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     protected void readProperties() throws SQLException {
         Map<String, Object> map = readPropertiesTable();
-        for (String key : map.keySet()){
+        for (String key : map.keySet()) {
             readProperty(key, map.get(key));
         }
     }
@@ -125,7 +138,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         return previousRevision;
     }
 
-    protected void readProperty(String key, Object value){
+    protected void readProperty(String key, Object value) {
         if (key.equals("revision"))
             revision = Integer.valueOf((String) value);
         else if (key.equals("schema"))
@@ -135,8 +148,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         else if (key.equals("last_modified")) {
             Long valueLong = Long.valueOf((String) value);
             lastModified = new Date(valueLong);
-        }
-        else if (key.equals("previous_revision"))
+        } else if (key.equals("previous_revision"))
             previousRevision = (String) value;
 
         else if (key.equals("root_prefix"))
@@ -153,9 +165,10 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Returns the number of nested catalogs in the catalog
+     *
      * @return the number of nested catalogs in this catalog
      */
-    public int nestedCount(){
+    public int nestedCount() {
         ResultSet rs;
         int numCatalogs = 0;
         try {
@@ -170,6 +183,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * List CatalogReferences to all contained nested catalogs
+     *
      * @return array of CatalogReference containing all nested catalogs in this catalog
      */
     public CatalogReference[] listNested() {
@@ -208,6 +222,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Find the best matching nested CatalogReference for a given path
+     *
      * @param needlePath path to search in the catalog
      * @return The catalogs that best matches the given path
      */
@@ -228,6 +243,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Create a directory listing of the given directory path
+     *
      * @param path path to be listed
      * @return a list with all the DirectoryEntries contained in that path
      */
@@ -248,6 +264,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Create a directory listing of DirectoryEntry items based on MD5 path
+     *
      * @param parent1 first part of the parent MD5 hash
      * @param parent2 second part of the parent MD5 hash
      */
@@ -276,6 +293,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Finds and adds the file chunk of a DirectoryEntry
+     *
      * @param dirent DirectoryEntry that contains chunks
      */
     private void readChunks(DirectoryEntry dirent) throws SQLException {
@@ -295,19 +313,9 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         }
     }
 
-    private static String canonicalizePath(String path) {
-        if (path == null || path.isEmpty())
-            return "";
-        try {
-            return new URI(path).normalize().getPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
-
     /**
      * Finds the DirectoryEntry for a given path
+     *
      * @param rootPath relative path of the DirectoryEntry to find
      * @return the DirectoryEntry that corresponds to path, or null if not found
      */
@@ -325,6 +333,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Finds a DirectoryEntry for a given Md5 hashed path
+     *
      * @param md5Path md5 path of the DirectoryEntry to find
      * @return the DirectoryEntry that corresponds to md5Path, or null if not found
      */
@@ -335,16 +344,17 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     /**
      * Finds the DirectoryEnry for the given splitMd5 hashed path
+     *
      * @param pathHash split md5 hashed path of the DirectoryEntry to find
      * @return the DirectoryEntry that corresponds to pathHash, or null if not found
      */
     private DirectoryEntry findDirectoryEntrySplitMd5(PathHash pathHash) {
         try {
-            String query =  "SELECT " + DirectoryEntry.catalogDatabaseFields() +
-                            " FROM catalog" +
-                            " WHERE md5path_1 = " + pathHash.getHash1() + " AND" +
-                            " md5path_2 = " + pathHash.getHash2() +
-                            " LIMIT 1;";
+            String query = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+                    " FROM catalog" +
+                    " WHERE md5path_1 = " + pathHash.getHash1() + " AND" +
+                    " md5path_2 = " + pathHash.getHash2() +
+                    " LIMIT 1;";
             ResultSet res = runSQL(query);
             return makeDirectoryEntry(res);
         } catch (SQLException e) {

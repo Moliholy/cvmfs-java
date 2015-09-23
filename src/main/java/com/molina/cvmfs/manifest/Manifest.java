@@ -4,8 +4,6 @@ import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.manifest.exception.ManifestValidityError;
 import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.rootfile.RootFile;
-import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
-import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 
 import java.io.File;
@@ -17,9 +15,9 @@ import java.security.SignatureException;
 import java.util.Date;
 
 /**
- * @author  Jose Molina Colmenero
- *
- * Wraps information from .cvmfspublished
+ * @author Jose Molina Colmenero
+ *         <p/>
+ *         Wraps information from .cvmfspublished
  */
 public class Manifest extends RootFile {
 
@@ -39,13 +37,13 @@ public class Manifest extends RootFile {
         super(fileObject);
     }
 
-    public boolean hasHistory() {
-        return historyDatabase != null;
-    }
-
     public static Manifest open(String manifestPath)
             throws RootFileException, IOException {
         return new Manifest(new File(manifestPath));
+    }
+
+    public boolean hasHistory() {
+        return historyDatabase != null;
     }
 
     protected boolean verifySignature(Certificate certificate) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -54,6 +52,7 @@ public class Manifest extends RootFile {
 
     /**
      * Parse lines that appear in .cvmfspublished
+     *
      * @param line line of .cvmfspublished
      */
     @Override

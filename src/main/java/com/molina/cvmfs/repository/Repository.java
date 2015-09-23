@@ -183,7 +183,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     public boolean hasRepositoryType() {
-        return ! type.equals("unknown");
+        return !type.equals("unknown");
     }
 
     public boolean hasHistory() {
@@ -198,7 +198,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * Retrieves an object from the content addressable storage
-     * @param objectHash hash of the object
+     *
+     * @param objectHash  hash of the object
      * @param hash_suffix suffix of the object
      * @return the object, if exists in the repository
      */
@@ -218,6 +219,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * Recursively walk down the Catalogs and find the best fit for a path
+     *
      * @param needlePath path of the catalog
      * @return the catalog for the given path
      */
@@ -238,6 +240,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * Download and open a catalog from the repository
+     *
      * @param catalogHash hash of the catalog to download
      * @return the catalog that corresponds to the hash
      */

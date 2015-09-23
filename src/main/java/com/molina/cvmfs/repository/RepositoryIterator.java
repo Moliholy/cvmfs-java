@@ -1,7 +1,7 @@
 package com.molina.cvmfs.repository;
 
-import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.Catalog;
+import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;

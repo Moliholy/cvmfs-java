@@ -4,10 +4,9 @@ import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.zip.*;
+import java.util.zip.InflaterInputStream;
 
 /**
  * @author Jose Molina Colmenero
@@ -24,10 +23,6 @@ public class Fetcher {
         } else {
             this.source = new URL(source);
         }
-    }
-
-    protected String makeFileURL(String fileName) {
-        return source.toString() + "/" + fileName;
     }
 
     private static void decompress(InputStream is, File cachedFile) throws IOException {
@@ -76,6 +71,10 @@ public class Fetcher {
         Fetcher.decompress(rawStream, cachedFile);
     }
 
+    protected String makeFileURL(String fileName) {
+        return source.toString() + "/" + fileName;
+    }
+
     protected File retrieveFileFromSource(String fileName) throws FileNotFoundInRepository {
         String fileURL = makeFileURL(fileName);
         File cachedFile = cache.add(fileName);
@@ -91,6 +90,7 @@ public class Fetcher {
      * Method to retrieve a file from the cahe if exists, or from
      * the repository if it doesn't. In case it has to be retrieved from
      * the repository it won't be decompressed
+     *
      * @param fileName name of the file in the repository
      * @return a read-only file object that represents the cached file
      * @throws IOException if the file doesn't exists in the repository

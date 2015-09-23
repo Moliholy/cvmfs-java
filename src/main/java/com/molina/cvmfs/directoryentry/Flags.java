@@ -2,8 +2,8 @@ package com.molina.cvmfs.directoryentry;
 
 /**
  * @author Jose Molina Colmenero
- *
- * Definition of used dirent flags
+ *         <p/>
+ *         Definition of used dirent flags
  */
 public class Flags {
 

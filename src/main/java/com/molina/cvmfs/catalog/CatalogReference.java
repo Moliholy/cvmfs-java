@@ -4,7 +4,7 @@ import com.molina.cvmfs.repository.Repository;
 
 /**
  * @author Jose Molina Colmenero
- * Wraps a catalog reference to nested catalogs as found in Catalogs
+ *         Wraps a catalog reference to nested catalogs as found in Catalogs
  */
 public class CatalogReference {
 

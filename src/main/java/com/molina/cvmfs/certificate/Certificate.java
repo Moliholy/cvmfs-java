@@ -1,13 +1,10 @@
 package com.molina.cvmfs.certificate;
 
-import sun.misc.BASE64Decoder;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
@@ -17,7 +14,7 @@ import java.security.cert.X509Certificate;
 
 /**
  * @author Jose Molina Colmenero
- * Wraps an X.509 certificate object as stored in CVMFS repositories
+ *         Wraps an X.509 certificate object as stored in CVMFS repositories
  */
 public class Certificate {
     protected File certificateFile;
@@ -56,8 +53,9 @@ public class Certificate {
 
     /**
      * Verify a given signature to an expected 'message' string
+     *
      * @param signature signature to verify
-     * @param message message to verify against
+     * @param message   message to verify against
      * @return true if the signature is verified through the message
      */
     public boolean verify(String signature, String message) throws NoSuchAlgorithmException, InvalidKeyException,
