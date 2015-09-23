@@ -1,19 +1,19 @@
 package com.molina.cvmfs.catalog;
 
 
-import com.molina.cvmfs.catalog.Catalog;
-import com.molina.cvmfs.catalog.exception.StopIterationException;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 
 /**
  * Iterates through all directory entries of a Catalog
  */
-public class CatalogIterator {
+public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
 
     private Catalog catalog;
     private Deque<DirectoryEntryWrapper> backlog;
@@ -38,19 +38,23 @@ public class CatalogIterator {
         return backlog.pop();
     }
 
-    private boolean hasMore() {
+    public boolean hasNext() {
         return !backlog.isEmpty();
     }
 
     private void push(DirectoryEntryWrapper directoryEntryWrapper) {
-        backlog.push(directoryEntryWrapper);
+        backlog.addLast(directoryEntryWrapper);
     }
 
-    public DirectoryEntryWrapper next() throws StopIterationException {
-        if (!hasMore()) {
-            throw new StopIterationException();
+    public DirectoryEntryWrapper next() {
+        if (!hasNext()) {
+            throw new UnsupportedOperationException("No more elements");
         }
         return recursionStep();
+    }
+
+    public void remove() {
+        throw new UnsupportedOperationException("Cannot remove an element");
     }
 
     private DirectoryEntryWrapper recursionStep() {
@@ -64,7 +68,8 @@ public class CatalogIterator {
                 );
                 for (DirectoryEntry newDirent : newDirents) {
                     push(new DirectoryEntryWrapper(newDirent,
-                            wrapper.getPath() + "/" + newDirent.getName()));
+                            wrapper.getPath() + File.separator +
+                                    newDirent.getName()));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

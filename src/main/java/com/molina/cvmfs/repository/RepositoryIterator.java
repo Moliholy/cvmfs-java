@@ -3,18 +3,18 @@ package com.molina.cvmfs.repository;
 import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogReference;
-import com.molina.cvmfs.catalog.exception.StopIterationException;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
-import com.molina.cvmfs.repository.exception.NestedCatalogNotFound;
+import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 
 /**
  * Iterates through all directory entries in a whole Repository
  */
-public class RepositoryIterator {
+public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
 
     private Repository repository;
     private Deque<CatalogIterator> catalogStack;
@@ -35,39 +35,42 @@ public class RepositoryIterator {
         this(repository, null);
     }
 
-    public DirectoryEntryWrapper next() throws StopIterationException, NestedCatalogNotFound {
+    public DirectoryEntryWrapper next() {
         DirectoryEntryWrapper result = getNextDirent();
         DirectoryEntry dirent = result.getDirectoryEntry();
         if (dirent.isNestedCatalogMountpoint()) {
-            fetchAndPushCatalog(result.getPath());
+            try {
+                fetchAndPushCatalog(result.getPath());
+            } catch (NestedCatalogNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
             return next();
         }
         return result;
     }
 
-    private DirectoryEntryWrapper getNextDirent() throws StopIterationException {
-        try {
-            return getCurrentCatalog().next();
-        } catch (StopIterationException e) {
+    private DirectoryEntryWrapper getNextDirent() {
+        CatalogIterator currentCatalog = getCurrentCatalogIterator();
+        DirectoryEntryWrapper wrapper = currentCatalog.next();
+        while (currentCatalog != null && !currentCatalog.hasNext()) {
             popCatalog();
-            if (!hasMore()) {
-                throw e;
-            }
-            return getNextDirent();
+            currentCatalog = getCurrentCatalogIterator();
         }
+        return wrapper;
     }
 
-    private void fetchAndPushCatalog(String catalogMountpoint) throws NestedCatalogNotFound {
-        Catalog currentCatalog = getCurrentCatalog().getCatalog();
+    private void fetchAndPushCatalog(String catalogMountpoint) throws NestedCatalogNotFoundException {
+        Catalog currentCatalog = getCurrentCatalogIterator().getCatalog();
         CatalogReference nestedRef = currentCatalog.findNestedForPath(catalogMountpoint);
         if (nestedRef == null) {
-            throw new NestedCatalogNotFound(repository.getFqrn());
+            throw new NestedCatalogNotFoundException(repository.getFqrn());
         }
         Catalog newCatalog = nestedRef.retrieveFrom(repository);
         pushCatalog(newCatalog);
     }
 
-    public boolean hasMore() {
+    public boolean hasNext() {
         return !catalogStack.isEmpty();
     }
 
@@ -75,8 +78,8 @@ public class RepositoryIterator {
         catalogStack.push(new CatalogIterator(catalog));
     }
 
-    private CatalogIterator getCurrentCatalog() {
-        return catalogStack.getLast();
+    private CatalogIterator getCurrentCatalogIterator() {
+        return catalogStack.peekLast();
     }
 
     private CatalogIterator popCatalog() {

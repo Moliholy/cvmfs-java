@@ -6,27 +6,26 @@ import com.molina.cvmfs.common.DatabaseObject;
 import com.molina.cvmfs.common.PathHash;
 import com.molina.cvmfs.directoryentry.Chunk;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
+import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
 import javax.crypto.Mac;
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * @author Jose Molina Colmenero
  *
  * Wraps the basic functionality of CernVM-FS Catalogs
  */
-public class Catalog extends DatabaseObject {
+public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
 
     public static final char CATALOG_ROOT_PREFIX = 'C';
 
@@ -283,12 +282,12 @@ public class Catalog extends DatabaseObject {
         if (schema < 2.4)
             return;
         ResultSet rs = runSQL("SELECT " + Chunk.catalogDatabaseFields() +
-                        " FROM chunks " +
-                        "WHERE md5path_1 = " +
-                        Long.toString(dirent.getMd5path_1()) +
-                        " AND md5path_2 = " +
-                        Long.toString(dirent.getMd5path_2()) +
-                        " ORDER BY offset ASC");
+                " FROM chunks " +
+                "WHERE md5path_1 = " +
+                Long.toString(dirent.getMd5path_1()) +
+                " AND md5path_2 = " +
+                Long.toString(dirent.getMd5path_2()) +
+                " ORDER BY offset ASC");
         try {
             dirent.addChunks(rs);
         } catch (ChunkFileDoesNotMatch e) {
@@ -353,4 +352,9 @@ public class Catalog extends DatabaseObject {
         }
         return null;
     }
+
+    public Iterator<DirectoryEntryWrapper> iterator() {
+        return new CatalogIterator(this);
+    }
+
 }

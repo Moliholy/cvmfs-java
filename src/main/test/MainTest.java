@@ -1,12 +1,11 @@
 import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogReference;
-import com.molina.cvmfs.catalog.exception.StopIterationException;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.RepositoryIterator;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
-import com.molina.cvmfs.repository.exception.NestedCatalogNotFound;
+import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 
 import java.io.IOException;
@@ -16,8 +15,7 @@ public class MainTest {
 
     public static void main(String[] args)
             throws RootFileException, CacheDirectoryNotFound,
-            FailedToLoadSourceException, IOException, NestedCatalogNotFound,
-            StopIterationException {
+            FailedToLoadSourceException, IOException, NestedCatalogNotFoundException {
         Repository repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss",
                 "/tmp/cache_01");
         System.out.println("Last revision: " +
@@ -32,7 +30,7 @@ public class MainTest {
 
         System.out.println("\nListing repository");
         RepositoryIterator iterator = new RepositoryIterator(repo);
-        while (iterator.hasMore()) {
+        while (iterator.hasNext()) {
             DirectoryEntryWrapper wrapper = iterator.next();
             System.out.println(wrapper.getPath());
         }
