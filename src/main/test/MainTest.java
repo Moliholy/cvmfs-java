@@ -16,8 +16,7 @@ public class MainTest {
             throws RootFileException, CacheDirectoryNotFound,
             FailedToLoadSourceException, IOException, NestedCatalogNotFoundException {
         long start = System.currentTimeMillis();
-        Repository repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss",
-                "/tmp/cache_01");
+        Repository repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss");
         System.out.println("Last revision: " +
                 repo.getManifest().getRevision() + "    " +
                 repo.getManifest().getLastModified());

@@ -1,7 +1,6 @@
 package com.molina.cvmfs.repository;
 
 import com.molina.cvmfs.catalog.Catalog;
-import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.catalog.exception.CatalogInitializationException;
 import com.molina.cvmfs.certificate.Certificate;
@@ -21,10 +20,9 @@ import com.molina.cvmfs.rootfile.exception.RootFileException;
 import com.molina.cvmfs.whitelist.Whitelist;
 
 import java.io.*;
-import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,6 +56,11 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         } catch (IOException e) {
             System.out.print("Couldn't retrieve all replication data");
         }
+    }
+
+    public Repository(String source) throws IOException, RootFileException,
+            FailedToLoadSourceException, CacheDirectoryNotFound {
+        this(source, Files.createTempDirectory("cache.").toFile().getAbsolutePath());
     }
 
     private void determineSource(String source, String cacheDirectory)
