@@ -2,7 +2,6 @@ import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.repository.Repository;
-import com.molina.cvmfs.repository.RepositoryIterator;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
@@ -29,9 +28,7 @@ public class MainTest {
         }
 
         System.out.println("\nListing repository");
-        RepositoryIterator iterator = new RepositoryIterator(repo);
-        while (iterator.hasNext()) {
-            DirectoryEntryWrapper wrapper = iterator.next();
+        for (DirectoryEntryWrapper wrapper : repo) {
             System.out.println(wrapper.getPath());
         }
     }

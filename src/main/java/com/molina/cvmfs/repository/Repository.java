@@ -1,10 +1,12 @@
 package com.molina.cvmfs.repository;
 
 import com.molina.cvmfs.catalog.Catalog;
+import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.catalog.exception.CatalogInitializationException;
 import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.common.Common;
+import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.manifest.Manifest;
 import com.molina.cvmfs.manifest.exception.ManifestException;
 import com.molina.cvmfs.manifest.exception.ManifestValidityError;
@@ -25,15 +27,12 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Wrapper around a CVMFS repository representation
  */
-public class Repository {
+public class Repository implements Iterable<DirectoryEntryWrapper> {
     protected Map<String, Catalog> openedCatalogs;
     protected Manifest manifest;
     protected String fqrn;
@@ -262,4 +261,7 @@ public class Repository {
         return null;
     }
 
+    public Iterator<DirectoryEntryWrapper> iterator() {
+        return new RepositoryIterator(this);
+    }
 }
