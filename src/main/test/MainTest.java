@@ -15,6 +15,7 @@ public class MainTest {
     public static void main(String[] args)
             throws RootFileException, CacheDirectoryNotFound,
             FailedToLoadSourceException, IOException, NestedCatalogNotFoundException {
+        long start = System.currentTimeMillis();
         Repository repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss",
                 "/tmp/cache_01");
         System.out.println("Last revision: " +
@@ -31,5 +32,7 @@ public class MainTest {
         for (DirectoryEntryWrapper wrapper : repo) {
             System.out.println(wrapper.getPath());
         }
+        long total_time = System.currentTimeMillis() - start;
+        System.out.println("\n\n\nThe execution took " + total_time + " milliseconds");
     }
 }
