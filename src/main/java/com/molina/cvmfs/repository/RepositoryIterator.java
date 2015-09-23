@@ -7,9 +7,9 @@ import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Iterates through all directory entries in a whole Repository
@@ -21,7 +21,7 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
 
     public RepositoryIterator(Repository repository, String catalogHash) {
         this.repository = repository;
-        this.catalogStack = new ArrayDeque<CatalogIterator>();
+        this.catalogStack = new LinkedList<CatalogIterator>();
         Catalog rootCatalog;
         if (catalogHash == null || catalogHash.isEmpty()) {
             rootCatalog = repository.retrieveRootCatalog();
@@ -41,6 +41,7 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         if (dirent.isNestedCatalogMountpoint()) {
             try {
                 fetchAndPushCatalog(result.getPath());
+                return next();
             } catch (NestedCatalogNotFoundException e) {
                 e.printStackTrace();
                 return null;
@@ -53,8 +54,10 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         CatalogIterator currentCatalog = getCurrentCatalogIterator();
         DirectoryEntryWrapper wrapper = currentCatalog.next();
         while (currentCatalog != null && !currentCatalog.hasNext()) {
-            popCatalog();
+            CatalogIterator ci = popCatalog();
+            ci.getCatalog().close();
             currentCatalog = getCurrentCatalogIterator();
+            System.gc();
         }
         return wrapper;
     }
@@ -74,7 +77,7 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
     }
 
     private void pushCatalog(Catalog catalog) {
-        catalogStack.addFirst(new CatalogIterator(catalog));
+        catalogStack.addLast(new CatalogIterator(catalog));
     }
 
     private CatalogIterator getCurrentCatalogIterator() {

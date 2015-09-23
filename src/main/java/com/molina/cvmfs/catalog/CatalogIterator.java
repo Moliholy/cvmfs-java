@@ -6,9 +6,9 @@ import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * Iterates through all directory entries of a Catalog
@@ -20,7 +20,7 @@ public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
 
     public CatalogIterator(Catalog catalog) {
         this.catalog = catalog;
-        this.backlog = new ArrayDeque<DirectoryEntryWrapper>();
+        this.backlog = new LinkedList<DirectoryEntryWrapper>();
         String rootPath = "";
         if (!this.catalog.isRoot()) {
             rootPath = this.catalog.getRootPrefix();
@@ -35,7 +35,7 @@ public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
     }
 
     private DirectoryEntryWrapper pop() {
-        return backlog.pop();
+        return backlog.removeFirst();
     }
 
     public boolean hasNext() {
@@ -43,7 +43,7 @@ public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
     }
 
     private void push(DirectoryEntryWrapper directoryEntryWrapper) {
-        backlog.addLast(directoryEntryWrapper);
+        backlog.addFirst(directoryEntryWrapper);
     }
 
     public DirectoryEntryWrapper next() {
