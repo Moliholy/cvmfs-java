@@ -28,10 +28,13 @@ public class MainTest {
         }
 
         System.out.println("\nListing repository");
+        long totalElements = 0;
         for (DirectoryEntryWrapper wrapper : repo) {
             System.out.println(wrapper.getPath());
+            totalElements++;
         }
         long total_time = System.currentTimeMillis() - start;
-        System.out.println("\n\n\nThe execution took " + total_time + " milliseconds");
+        System.out.println("\n\n\nThe execution took " + total_time +
+                " milliseconds\nNumber of elements: " + totalElements);
     }
 }

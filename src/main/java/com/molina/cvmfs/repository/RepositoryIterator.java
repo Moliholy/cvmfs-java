@@ -45,7 +45,6 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
                 e.printStackTrace();
                 return null;
             }
-            return next();
         }
         return result;
     }
@@ -64,7 +63,7 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         Catalog currentCatalog = getCurrentCatalogIterator().getCatalog();
         CatalogReference nestedRef = currentCatalog.findNestedForPath(catalogMountpoint);
         if (nestedRef == null) {
-            throw new NestedCatalogNotFoundException(repository.getFqrn());
+            throw new NestedCatalogNotFoundException(catalogMountpoint);
         }
         Catalog newCatalog = nestedRef.retrieveFrom(repository);
         pushCatalog(newCatalog);
@@ -75,15 +74,15 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
     }
 
     private void pushCatalog(Catalog catalog) {
-        catalogStack.push(new CatalogIterator(catalog));
+        catalogStack.addFirst(new CatalogIterator(catalog));
     }
 
     private CatalogIterator getCurrentCatalogIterator() {
-        return catalogStack.peekLast();
+        return catalogStack.peekFirst();
     }
 
     private CatalogIterator popCatalog() {
-        return catalogStack.pop();
+        return catalogStack.removeFirst();
     }
 
 
