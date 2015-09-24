@@ -24,6 +24,7 @@ public class MainTest {
                 repo.getManifest().getLastModified());
         Catalog rootCatalog = repo.retrieveRootCatalog();
         System.out.println("Catalog schema: " + rootCatalog.getSchema() + "\n");
+        System.out.println("Downloading all catalogs of this repository");
         repo.retrieveCatalogTree();
 
         System.out.println("\nListing repository");
