@@ -40,7 +40,13 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         DirectoryEntry dirent = result.getDirectoryEntry();
         if (dirent.isNestedCatalogMountpoint()) {
             try {
-                fetchAndPushCatalog(result.getPath());
+                String path = result.getPath();
+                Catalog mountedCatalog = repository.getMountedCatalog(path);
+                if (mountedCatalog == null) {
+                    fetchAndPushCatalog(path);
+                } else {
+                    pushCatalog(mountedCatalog);
+                }
                 return next();
             } catch (NestedCatalogNotFoundException e) {
                 e.printStackTrace();
