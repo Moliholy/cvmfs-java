@@ -13,9 +13,13 @@ public class DatabaseObject {
     protected File databaseFile;
     protected Connection connection;
 
-    public DatabaseObject(File databaseFile) throws SQLException {
+    public DatabaseObject(File databaseFile) throws IllegalStateException, SQLException {
         this.databaseFile = databaseFile;
-        openDatabase();
+        if (this.databaseFile != null && this.databaseFile.exists()) {
+            openDatabase();
+        } else {
+            throw new IllegalStateException("Database file is null or doesn't exist");
+        }
     }
 
     /**
@@ -32,9 +36,29 @@ public class DatabaseObject {
         connection.setAutoCommit(false);
     }
 
+    public boolean open() {
+        try {
+            openDatabase();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isOpenned() {
+        try {
+            return connection != null && !connection.isClosed();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void close() {
         try {
             connection.close();
+            connection = null;
         } catch (SQLException e) {
             e.printStackTrace();
         }
