@@ -93,7 +93,7 @@ public class DirectoryEntry {
 
     public String contentHashString() {
         String suffix = ContentHashTypes.toSuffix(contentHashType);
-        return Common.binaryBufferToHexString(contentHash.getBytes()) + suffix;
+        return contentHash + suffix;
     }
 
     public boolean hasChunks() {
