@@ -60,10 +60,8 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         CatalogIterator currentCatalog = getCurrentCatalogIterator();
         DirectoryEntryWrapper wrapper = currentCatalog.next();
         while (currentCatalog != null && !currentCatalog.hasNext()) {
-            CatalogIterator ci = popCatalog();
-            ci.getCatalog().close();
+            popCatalog();
             currentCatalog = getCurrentCatalogIterator();
-            System.gc();
         }
         return wrapper;
     }
