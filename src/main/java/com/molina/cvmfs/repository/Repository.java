@@ -58,6 +58,31 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         }
     }
 
+    /**
+     * Returns the catalog that has the corresponding path
+     * @param path the path to search for
+     * @return
+     */
+    public Catalog getCatalogForPath(String path) {
+        String bestPath = "";
+        for (String catalogPath : openedCatalogs.keySet()) {
+            if (path.contains(catalogPath)) {
+                bestPath = catalogPath;
+            }
+        }
+        Catalog bestFit = openedCatalogs.get(bestPath);
+        return null;
+    }
+
+    public Catalog getMountedCatalog(String path) {
+        for (Catalog c : openedCatalogs.values()) {
+            if (c.getRootPrefix().equals(path)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     public Repository(String source) throws IOException, RootFileException,
             FailedToLoadSourceException, CacheDirectoryNotFound {
         this(source, Files.createTempDirectory("cache.").toFile().getAbsolutePath());
