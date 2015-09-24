@@ -1,5 +1,7 @@
 package com.molina.cvmfs.common;
 
+import org.sqlite.SQLiteConfig;
+
 import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
@@ -11,7 +13,7 @@ import java.util.Map;
 public class DatabaseObject {
 
     protected File databaseFile;
-    protected Connection connection;
+    private Connection connection;
 
     public DatabaseObject(File databaseFile) throws IllegalStateException, SQLException {
         this.databaseFile = databaseFile;
@@ -32,7 +34,9 @@ public class DatabaseObject {
             connection = null;
             return;
         }
-        connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
+        SQLiteConfig config = new SQLiteConfig();
+        config.setReadOnly(true);
+        connection = config.createConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
         connection.setAutoCommit(false);
     }
 
@@ -46,6 +50,10 @@ public class DatabaseObject {
         }
     }
 
+    public boolean recycle() {
+        return isOpenned() && close() && open();
+    }
+
     public boolean isOpenned() {
         try {
             return connection != null && !connection.isClosed();
@@ -55,12 +63,14 @@ public class DatabaseObject {
         }
     }
 
-    public void close() {
+    public boolean close() {
         try {
             connection.close();
             connection = null;
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -78,6 +88,7 @@ public class DatabaseObject {
             result.put(rs.getString(1), rs.getObject(2));
         }
         rs.close();
+        rs.getStatement().close();
         return result;
     }
 
