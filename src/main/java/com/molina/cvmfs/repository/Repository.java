@@ -250,6 +250,17 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         return retrieveAndOpenCatalog(catalogHash);
     }
 
+    public  void retrieveCatalogTree(Catalog catalog) {
+        for (CatalogReference ref : catalog.listNested()) {
+            Catalog newCatalog = ref.retrieveFrom(this);
+            retrieveCatalogTree(newCatalog);
+        }
+    }
+
+    public void retrieveCatalogTree() {
+        retrieveCatalogTree(retrieveRootCatalog());
+    }
+
     protected Catalog retrieveAndOpenCatalog(String catalogHash) {
         File catalogFile;
         try {
