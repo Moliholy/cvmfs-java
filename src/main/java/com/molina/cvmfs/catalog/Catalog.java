@@ -250,9 +250,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     public DirectoryEntry[] listDirectory(String path) {
         String realPath = canonicalizePath(path);
         try {
-            Mac md5Mac = Mac.getInstance("MD5");
-            PathHash parentHash = Common.splitMd5(
-                    md5Mac.doFinal(realPath.getBytes()));
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            PathHash parentHash = Common.splitMd5(md.digest(realPath.getBytes()));
             return listDirectorySplitMd5(parentHash.getHash1(),
                     parentHash.getHash2());
         } catch (NoSuchAlgorithmException e) {
