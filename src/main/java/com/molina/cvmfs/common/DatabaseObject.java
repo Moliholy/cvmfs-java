@@ -51,10 +51,10 @@ public class DatabaseObject {
     }
 
     public boolean recycle() {
-        return isOpenned() && close() && open();
+        return isOpened() && close() && open();
     }
 
-    public boolean isOpenned() {
+    public boolean isOpened() {
         try {
             return connection != null && !connection.isClosed();
         } catch (SQLException e) {
