@@ -1,3 +1,5 @@
+package com.molina.cvmfs.test;
+
 import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
@@ -22,10 +24,7 @@ public class MainTest {
                 repo.getManifest().getLastModified());
         Catalog rootCatalog = repo.retrieveRootCatalog();
         System.out.println("Catalog schema: " + rootCatalog.getSchema() + "\n");
-
-        for (CatalogReference nestedCatalogRef : rootCatalog.listNested()) {
-            System.out.println("Nested catalog at: " + nestedCatalogRef.getRootPath());
-        }
+        repo.retrieveCatalogTree();
 
         System.out.println("\nListing repository");
         long totalElements = 0;

@@ -1,3 +1,5 @@
+package com.molina.cvmfs.test;
+
 import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.repository.Repository;
