@@ -9,7 +9,6 @@ import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
-import javax.crypto.Mac;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 /**
  * @author Jose Molina Colmenero
- *         <p/>
+ *         <p>
  *         Wraps the basic functionality of CernVM-FS Catalogs
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
@@ -169,7 +168,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @return the number of nested catalogs in this catalog
      */
     public int nestedCount() {
-        ResultSet rs;
+        ResultSet rs = null;
         int numCatalogs = 0;
         try {
             rs = runSQL("SELECT count(*) FROM nested_catalogs;");
@@ -177,6 +176,15 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
                 numCatalogs = rs.getInt(1);
         } catch (SQLException e) {
             return 0;
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                    rs.getStatement().close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return numCatalogs;
     }
@@ -194,7 +202,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         } else {
             sqlQuery = "SELECT path, sha1 FROM nested_catalogs";
         }
-        ResultSet rs;
+        ResultSet rs = null;
         ArrayList<CatalogReference> arr = new ArrayList<CatalogReference>();
         try {
             rs = runSQL(sqlQuery);
@@ -208,6 +216,15 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             }
         } catch (SQLException e) {
             return new CatalogReference[0];
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                    rs.getStatement().close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return arr.toArray(new CatalogReference[arr.size()]);
     }
@@ -280,6 +297,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         while (rs.next()) {
             arr.add(makeDirectoryEntry(rs));
         }
+        rs.close();
+        rs.getStatement().close();
         return arr.toArray(new DirectoryEntry[arr.size()]);
     }
 
@@ -310,6 +329,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         } catch (ChunkFileDoesNotMatch e) {
             e.printStackTrace();
         }
+        rs.close();
+        rs.getStatement().close();
     }
 
     /**
@@ -348,16 +369,26 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @return the DirectoryEntry that corresponds to pathHash, or null if not found
      */
     private DirectoryEntry findDirectoryEntrySplitMd5(PathHash pathHash) {
+        ResultSet rs = null;
         try {
             String query = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
                     " FROM catalog" +
                     " WHERE md5path_1 = " + pathHash.getHash1() + " AND" +
                     " md5path_2 = " + pathHash.getHash2() +
                     " LIMIT 1;";
-            ResultSet res = runSQL(query);
-            return makeDirectoryEntry(res);
+            rs = runSQL(query);
+            return makeDirectoryEntry(rs);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                    rs.getStatement().close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return null;
     }

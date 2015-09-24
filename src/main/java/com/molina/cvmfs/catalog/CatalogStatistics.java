@@ -80,6 +80,8 @@ public class CatalogStatistics {
                 stats.put("all_" + substr, value + stats.get(substr));
             }
         }
+        rs.close();
+        rs.getStatement().close();
     }
 
     protected Integer getStat(String statName) throws CounterNotFound {
