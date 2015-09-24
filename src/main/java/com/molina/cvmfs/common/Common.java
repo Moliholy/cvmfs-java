@@ -1,5 +1,9 @@
 package com.molina.cvmfs.common;
 
+import javax.crypto.Mac;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * @author Jose Molina Colmenero
  */
@@ -17,8 +21,19 @@ public class Common {
     public static String binaryBufferToHexString(byte[] binaryBuffer) {
         StringBuilder sb = new StringBuilder();
         for (byte b : binaryBuffer)
-            sb.append(String.format("%02X ", b));
-        return sb.toString().toLowerCase();
+            sb.append(String.format("%02x", b));
+        return sb.toString();
+    }
+
+    public static String pathToMd5(String path) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(path.getBytes());
+            return binaryBufferToHexString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public static PathHash splitMd5(byte[] md5Digest) {
