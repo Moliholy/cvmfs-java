@@ -17,10 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jose Molina Colmenero
@@ -273,7 +270,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @param path path to be listed
      * @return a list with all the DirectoryEntries contained in that path
      */
-    public DirectoryEntry[] listDirectory(String path) {
+    public List<DirectoryEntry> listDirectory(String path) {
         String realPath = canonicalizePath(path);
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -281,9 +278,9 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             return listDirectorySplitMd5(parentHash.getHash1(),
                     parentHash.getHash2());
         } catch (NoSuchAlgorithmException e) {
-            return new DirectoryEntry[0];
+            return new ArrayList<DirectoryEntry>();
         } catch (SQLException e) {
-            return new DirectoryEntry[0];
+            return new ArrayList<DirectoryEntry>();
         }
     }
 
@@ -293,7 +290,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @param parent1 first part of the parent MD5 hash
      * @param parent2 second part of the parent MD5 hash
      */
-    public DirectoryEntry[] listDirectorySplitMd5(long parent1, long parent2)
+    public List<DirectoryEntry> listDirectorySplitMd5(long parent1, long parent2)
             throws SQLException {
         listStatement.setLong(1, parent1);
         listStatement.setLong(2, parent2);
@@ -303,7 +300,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             arr.add(makeDirectoryEntry(rs));
         }
         rs.close();
-        return arr.toArray(new DirectoryEntry[arr.size()]);
+        return arr;
     }
 
     private DirectoryEntry makeDirectoryEntry(ResultSet rs)

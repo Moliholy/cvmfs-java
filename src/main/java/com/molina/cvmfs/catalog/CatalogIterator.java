@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Iterates through all directory entries of a Catalog
@@ -62,7 +63,7 @@ public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
         DirectoryEntry dirent = wrapper.getDirectoryEntry();
         if (dirent.isDirectory()) {
             try {
-                DirectoryEntry[] newDirents = catalog.listDirectorySplitMd5(
+                List<DirectoryEntry> newDirents = catalog.listDirectorySplitMd5(
                         dirent.getMd5path_1(),
                         dirent.getMd5path_2()
                 );
