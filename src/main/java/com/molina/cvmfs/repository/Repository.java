@@ -54,7 +54,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             tryToGetLastReplicationTimestamp();
             tryToGetReplicationState();
         } catch (IOException e) {
-            System.out.print("Couldn't retrieve all replication data");
+            System.err.println("Couldn't retrieve all replication data");
         }
     }
 
