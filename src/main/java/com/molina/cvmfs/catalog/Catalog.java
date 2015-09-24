@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -37,10 +38,18 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     protected Date lastModified;
     protected String rootPrefix;
     protected String previousRevision;
+    private final PreparedStatement listStatement;
+
+    protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+            " FROM catalog" +
+            " WHERE md5path_1 = ? AND" +
+            " md5path_2 = ?" +
+            " LIMIT 1;";
 
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {
         super(databaseFile);
+        listStatement = createPreparedStatement(LISTING_QUERY);
         hash = catalogHash;
         schemaRevision = 0;
         readProperties();
@@ -284,21 +293,17 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @param parent1 first part of the parent MD5 hash
      * @param parent2 second part of the parent MD5 hash
      */
-    public DirectoryEntry[] listDirectorySplitMd5(Long parent1,
-                                                  Long parent2)
+    public DirectoryEntry[] listDirectorySplitMd5(long parent1, long parent2)
             throws SQLException {
-        String queryString = "SELECT " +
-                DirectoryEntry.catalogDatabaseFields() + " FROM catalog " +
-                "WHERE parent_1 = " + parent1.toString() +
-                " AND parent_2 = " + parent2.toString() +
-                " ORDER BY name ASC;";
-        ResultSet rs = runSQL(queryString);
+        listStatement.clearParameters();
+        listStatement.setString(1, "" + parent1);
+        listStatement.setString(2, "" + parent2);
+        ResultSet rs = listStatement.executeQuery();
         ArrayList<DirectoryEntry> arr = new ArrayList<DirectoryEntry>();
         while (rs.next()) {
             arr.add(makeDirectoryEntry(rs));
         }
-        rs.close();
-        rs.getStatement().close();
+        //rs.close();
         return arr.toArray(new DirectoryEntry[arr.size()]);
     }
 

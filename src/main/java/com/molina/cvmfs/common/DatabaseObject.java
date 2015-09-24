@@ -40,6 +40,14 @@ public class DatabaseObject {
         connection.setAutoCommit(false);
     }
 
+    protected PreparedStatement createPreparedStatement(String sql) throws SQLException {
+        return connection.prepareStatement(sql);
+    }
+
+    protected ResultSet executePreparedStatement(PreparedStatement pe) throws SQLException {
+        return pe.executeQuery();
+    }
+
     public boolean open() {
         try {
             openDatabase();
