@@ -42,9 +42,9 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
             " FROM catalog" +
-            " WHERE md5path_1 = ? AND" +
-            " md5path_2 = ?" +
-            " LIMIT 1;";
+            " WHERE parent_1 = ? AND" +
+            " parent_2 = ?" +
+            " ORDER BY name ASC;";
 
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {
@@ -295,15 +295,14 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     public DirectoryEntry[] listDirectorySplitMd5(long parent1, long parent2)
             throws SQLException {
-        listStatement.clearParameters();
-        listStatement.setString(1, "" + parent1);
-        listStatement.setString(2, "" + parent2);
+        listStatement.setLong(1, parent1);
+        listStatement.setLong(2, parent2);
         ResultSet rs = listStatement.executeQuery();
         ArrayList<DirectoryEntry> arr = new ArrayList<DirectoryEntry>();
         while (rs.next()) {
             arr.add(makeDirectoryEntry(rs));
         }
-        //rs.close();
+        rs.close();
         return arr.toArray(new DirectoryEntry[arr.size()]);
     }
 
