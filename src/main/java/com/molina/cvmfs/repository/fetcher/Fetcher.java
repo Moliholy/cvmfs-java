@@ -12,6 +12,8 @@ import java.util.zip.InflaterInputStream;
  * @author Jose Molina Colmenero
  */
 public class Fetcher {
+    private static final int FETCHER_BUFFER_SIZE = 10 * 1024 * 1024;  // 20MB
+
     protected Cache cache;
     protected URL source;
 
@@ -26,10 +28,9 @@ public class Fetcher {
     }
 
     private static void decompress(InputStream is, File cachedFile) throws IOException {
-        int bufferSize = 2048;
-        byte[] inputBuffer = new byte[bufferSize];
+        byte[] inputBuffer = new byte[FETCHER_BUFFER_SIZE];
         FileOutputStream fos = new FileOutputStream(cachedFile);
-        BufferedOutputStream dest = new BufferedOutputStream(fos, bufferSize);
+        BufferedOutputStream dest = new BufferedOutputStream(fos, FETCHER_BUFFER_SIZE);
         InflaterInputStream decompresserStream = new InflaterInputStream(new BufferedInputStream(is));
         int bytesRead;
         try {
@@ -46,14 +47,13 @@ public class Fetcher {
     protected static void downloadContentAndStore(File cachedFile, String fileURL) throws IOException {
         BufferedInputStream bin = null;
         FileOutputStream fout = null;
-        int bufferSize = 1024;
         try {
             bin = new BufferedInputStream(new URL(fileURL).openStream());
             fout = new FileOutputStream(cachedFile);
 
-            byte data[] = new byte[bufferSize];
+            byte data[] = new byte[FETCHER_BUFFER_SIZE];
             int count;
-            while ((count = bin.read(data, 0, bufferSize)) != -1) {
+            while ((count = bin.read(data, 0, FETCHER_BUFFER_SIZE)) != -1) {
                 fout.write(data, 0, count);
             }
         } finally {
