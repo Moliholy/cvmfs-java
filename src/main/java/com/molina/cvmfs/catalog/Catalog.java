@@ -237,7 +237,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             if (rs != null) {
                 try {
                     rs.close();
-                    rs.getStatement().close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -388,7 +387,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             if (rs != null) {
                 try {
                     rs.close();
-                    rs.getStatement().close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
