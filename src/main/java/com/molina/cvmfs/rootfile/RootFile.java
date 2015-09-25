@@ -65,7 +65,7 @@ public abstract class RootFile {
         checkValidity();
     }
 
-    public boolean verifySignature(String publicEntity) {
+    public boolean verifySignature(Object publicEntity) {
         return hasSignature && verifySignatureFromEntity(publicEntity);
     }
 
@@ -116,5 +116,5 @@ public abstract class RootFile {
 
     protected abstract void checkValidity() throws RootFileException;
 
-    protected abstract boolean verifySignatureFromEntity(String publicEntity);
+    protected abstract boolean verifySignatureFromEntity(Object publicEntity);
 }
