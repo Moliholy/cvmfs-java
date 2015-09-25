@@ -117,7 +117,20 @@ public class Manifest extends RootFile {
     }
 
     @Override
-    protected boolean verifySignatureFromEntity(String publicEntity) {
+    protected boolean verifySignatureFromEntity(Object publicEntity) {
+        if (publicEntity instanceof Certificate) {
+            try {
+                return ((Certificate) publicEntity).verify(signature, signatureChecksum);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (SignatureException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
         return false;
     }
 

@@ -195,8 +195,20 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     public boolean verify(String publicKeyPath) {
         Whitelist whitelist = retrieveWhitelist();
-        // TODO
-        return true;
+        try {
+            Certificate certificate = retrieveCertificate();
+            return whitelist.verifySignature(publicKeyPath) &&
+                    !whitelist.hasExpired() &&
+                    whitelist.containsCertificate(certificate) &&
+                    manifest.verifySignature(certificate);
+        } catch (FileNotFoundInRepositoryException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     protected Whitelist retrieveWhitelist() {
