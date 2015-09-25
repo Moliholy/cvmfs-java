@@ -26,8 +26,6 @@ import java.util.*;
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
 
-    public static final char CATALOG_ROOT_PREFIX = 'C';
-
     protected float schema;
     protected float schemaRevision;
     protected int revision;
@@ -35,29 +33,49 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     protected Date lastModified;
     protected String rootPrefix;
     protected String previousRevision;
-    private final PreparedStatement listStatement;
+    private PreparedStatement listStatement;
+    private PreparedStatement nestedCountStatement;
+    private PreparedStatement readChunkStatement;
+    private PreparedStatement findMd5PathStatement;
+    private PreparedStatement listNestedStatement;
 
+    public static final char CATALOG_ROOT_PREFIX = 'C';
     protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
             " FROM catalog" +
             " WHERE parent_1 = ? AND" +
             " parent_2 = ?" +
             " ORDER BY name ASC;";
+    protected static final String NESTED_COUNT = "SELECT count(*) FROM nested_catalogs;";
+    protected static final String READ_CHUNK = "SELECT " + Chunk.catalogDatabaseFields() +
+            " FROM chunks WHERE md5path_1 = ? AND md5path_2 = ? ORDER BY offset ASC";
+    protected static final String FIND_MD5_PATH = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+            " FROM catalog WHERE md5path_1 = ? AND md5path_2 = ? LIMIT 1;";
 
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {
         super(databaseFile);
-        listStatement = createPreparedStatement(LISTING_QUERY);
         hash = catalogHash;
         schemaRevision = 0;
         readProperties();
         guessRootPrefixIfNeeded();
         guessLastModifiedIfNeeded();
         checkValidity();
+        prepareStatements();
     }
 
-    public static Catalog open(String catalogPath)
-            throws SQLException, CatalogInitializationException {
-        return new Catalog(new File(catalogPath), "");
+    private void prepareStatements() throws SQLException {
+        listStatement = createPreparedStatement(LISTING_QUERY);
+        nestedCountStatement = createPreparedStatement(NESTED_COUNT);
+        readChunkStatement = createPreparedStatement(READ_CHUNK);
+        findMd5PathStatement = createPreparedStatement(FIND_MD5_PATH);
+        boolean newVersion = (schema <= 1.2 && schemaRevision > 0);
+        String sqlQuery;
+        if (newVersion) {
+            sqlQuery = "SELECT path, sha1, size FROM nested_catalogs";
+        } else {
+            sqlQuery = "SELECT path, sha1 FROM nested_catalogs";
+        }
+        listNestedStatement = createPreparedStatement(sqlQuery);
     }
 
     private static String canonicalizePath(String path) {
@@ -177,7 +195,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         ResultSet rs = null;
         int numCatalogs = 0;
         try {
-            rs = runSQL("SELECT count(*) FROM nested_catalogs;");
+            rs = nestedCountStatement.executeQuery();
             if (rs.next())
                 numCatalogs = rs.getInt(1);
         } catch (SQLException e) {
@@ -186,7 +204,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             if (rs != null) {
                 try {
                     rs.close();
-                    rs.getStatement().close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -202,16 +219,10 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     public CatalogReference[] listNested() {
         boolean newVersion = (schema <= 1.2 && schemaRevision > 0);
-        String sqlQuery;
-        if (newVersion) {
-            sqlQuery = "SELECT path, sha1, size FROM nested_catalogs";
-        } else {
-            sqlQuery = "SELECT path, sha1 FROM nested_catalogs";
-        }
         ResultSet rs = null;
         ArrayList<CatalogReference> arr = new ArrayList<CatalogReference>();
         try {
-            rs = runSQL(sqlQuery);
+            rs = listNestedStatement.executeQuery();
             while (rs.next()) {
                 String path = rs.getString(1);
                 String sha1 = rs.getString(2);
@@ -318,20 +329,15 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     private void readChunks(DirectoryEntry dirent) throws SQLException {
         if (schema < 2.4)
             return;
-        ResultSet rs = runSQL("SELECT " + Chunk.catalogDatabaseFields() +
-                " FROM chunks " +
-                "WHERE md5path_1 = " +
-                Long.toString(dirent.getMd5path_1()) +
-                " AND md5path_2 = " +
-                Long.toString(dirent.getMd5path_2()) +
-                " ORDER BY offset ASC");
+        readChunkStatement.setLong(1, dirent.getMd5path_1());
+        readChunkStatement.setLong(2, dirent.getMd5path_2());
+        ResultSet rs = readChunkStatement.executeQuery();
         try {
             dirent.addChunks(rs);
         } catch (ChunkFileDoesNotMatch e) {
             e.printStackTrace();
         }
         rs.close();
-        rs.getStatement().close();
     }
 
     /**
@@ -364,7 +370,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     }
 
     /**
-     * Finds the DirectoryEnry for the given splitMd5 hashed path
+     * Finds the DirectoryEntry for the given splitMd5 hashed path
      *
      * @param pathHash split md5 hashed path of the DirectoryEntry to find
      * @return the DirectoryEntry that corresponds to pathHash, or null if not found
@@ -372,12 +378,9 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     private DirectoryEntry findDirectoryEntrySplitMd5(PathHash pathHash) {
         ResultSet rs = null;
         try {
-            String query = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
-                    " FROM catalog" +
-                    " WHERE md5path_1 = " + pathHash.getHash1() + " AND" +
-                    " md5path_2 = " + pathHash.getHash2() +
-                    " LIMIT 1;";
-            rs = runSQL(query);
+            findMd5PathStatement.setLong(1, pathHash.getHash1());
+            findMd5PathStatement.setLong(2, pathHash.getHash2());
+            rs = findMd5PathStatement.executeQuery();
             return makeDirectoryEntry(rs);
         } catch (SQLException e) {
             e.printStackTrace();
