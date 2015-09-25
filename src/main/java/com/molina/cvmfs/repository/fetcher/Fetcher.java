@@ -12,7 +12,7 @@ import java.util.zip.InflaterInputStream;
  * @author Jose Molina Colmenero
  */
 public class Fetcher {
-    private static final int FETCHER_BUFFER_SIZE = 10 * 1024 * 1024;  // 20MB
+    private static final int FETCHER_BUFFER_SIZE = 10 * 1024 * 1024;  // 10MB
 
     protected Cache cache;
     protected URL source;
