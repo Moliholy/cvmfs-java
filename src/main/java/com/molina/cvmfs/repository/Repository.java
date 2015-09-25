@@ -12,7 +12,7 @@ import com.molina.cvmfs.manifest.exception.ManifestValidityError;
 import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
-import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
+import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
 import com.molina.cvmfs.repository.fetcher.Fetcher;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
@@ -216,7 +216,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     public Certificate retrieveCertificate()
-            throws FileNotFoundInRepository, CertificateException, FileNotFoundException {
+            throws FileNotFoundInRepositoryException, CertificateException, FileNotFoundException {
         File certificate = retrieveObject(manifest.getCertificate(), 'X');
         return new Certificate(certificate);
     }
@@ -228,13 +228,13 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * @param hash_suffix suffix of the object
      * @return the object, if exists in the repository
      */
-    public File retrieveObject(String objectHash, char hash_suffix) throws FileNotFoundInRepository {
+    public File retrieveObject(String objectHash, char hash_suffix) throws FileNotFoundInRepositoryException {
         String path = "data/" + objectHash.substring(0, 2) + "/" +
                 objectHash.substring(2, objectHash.length()) + hash_suffix;
         return fetcher.retrieveFile(path);
     }
 
-    public File retrieveObject(String objectHash) throws FileNotFoundInRepository {
+    public File retrieveObject(String objectHash) throws FileNotFoundInRepositoryException {
         return retrieveObject(objectHash, '\0');
     }
 
@@ -293,7 +293,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             Catalog newCatalog = new Catalog(catalogFile, catalogHash);
             openedCatalogs.put(catalogHash, newCatalog);
             return newCatalog;
-        } catch (FileNotFoundInRepository e) {
+        } catch (FileNotFoundInRepositoryException e) {
             e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -1,7 +1,7 @@
 package com.molina.cvmfs.repository.fetcher;
 
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
-import com.molina.cvmfs.repository.exception.FileNotFoundInRepository;
+import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
 
 import java.io.*;
 import java.net.URL;
@@ -75,13 +75,13 @@ public class Fetcher {
         return source.toString() + "/" + fileName;
     }
 
-    protected File retrieveFileFromSource(String fileName) throws FileNotFoundInRepository {
+    protected File retrieveFileFromSource(String fileName) throws FileNotFoundInRepositoryException {
         String fileURL = makeFileURL(fileName);
         File cachedFile = cache.add(fileName);
         try {
             Fetcher.downloadContentAndDecompress(cachedFile, fileURL);
         } catch (IOException e) {
-            throw new FileNotFoundInRepository(fileName);
+            throw new FileNotFoundInRepositoryException(fileName);
         }
         return cache.get(fileName);
     }
@@ -102,7 +102,7 @@ public class Fetcher {
         return cache.get(fileName);
     }
 
-    public File retrieveFile(String fileName) throws FileNotFoundInRepository {
+    public File retrieveFile(String fileName) throws FileNotFoundInRepositoryException {
         File cachedFile = cache.get(fileName);
         if (cachedFile == null) {
             return retrieveFileFromSource(fileName);
