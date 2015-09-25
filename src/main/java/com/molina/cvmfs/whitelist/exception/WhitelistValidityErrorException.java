@@ -5,9 +5,9 @@ import com.molina.cvmfs.rootfile.exception.RootFileException;
 /**
  * @author Jose Molina Colmenero
  */
-public class WhitelistValidityError extends RootFileException {
+public class WhitelistValidityErrorException extends RootFileException {
 
-    public WhitelistValidityError(String message) {
+    public WhitelistValidityErrorException(String message) {
         super(message);
     }
 }
