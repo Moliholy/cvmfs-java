@@ -294,6 +294,40 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         }
     }
 
+    @Override
+    public boolean open() {
+        boolean result = super.open();
+        try {
+            readProperties();
+            guessRootPrefixIfNeeded();
+            guessLastModifiedIfNeeded();
+            checkValidity();
+            prepareStatements();
+        } catch (SQLException e) {
+            result = false;
+        } catch (CatalogInitializationException e) {
+            e.printStackTrace();
+            result = false;
+        }
+        return result;
+    }
+
+    @Override
+    public boolean close() {
+        boolean result = true;
+        try {
+            findMd5PathStatement.close();
+            listNestedStatement.close();
+            listStatement.close();
+            nestedCountStatement.close();
+            readChunkStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            result = false;
+        }
+        return result && super.close();
+    }
+
     /**
      * Create a directory listing of DirectoryEntry items based on MD5 path
      *
