@@ -87,7 +87,7 @@ public class Fetcher {
     }
 
     /**
-     * Method to retrieve a file from the cahe if exists, or from
+     * Method to retrieve a file from the cache if exists, or from
      * the repository if it doesn't. In case it has to be retrieved from
      * the repository it won't be decompressed
      *
