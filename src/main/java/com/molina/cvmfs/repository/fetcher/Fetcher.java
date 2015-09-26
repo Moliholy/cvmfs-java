@@ -31,7 +31,8 @@ public class Fetcher {
         byte[] inputBuffer = new byte[FETCHER_BUFFER_SIZE];
         FileOutputStream fos = new FileOutputStream(cachedFile);
         BufferedOutputStream dest = new BufferedOutputStream(fos, FETCHER_BUFFER_SIZE);
-        InflaterInputStream decompresserStream = new InflaterInputStream(new BufferedInputStream(is));
+        BufferedInputStream decompresserStream = new BufferedInputStream(
+                new InflaterInputStream(new BufferedInputStream(is)), FETCHER_BUFFER_SIZE);
         int bytesRead;
         try {
             while ((bytesRead = decompresserStream.read(inputBuffer)) != -1) {
@@ -46,10 +47,10 @@ public class Fetcher {
 
     protected static void downloadContentAndStore(File cachedFile, String fileURL) throws IOException {
         BufferedInputStream bin = null;
-        FileOutputStream fout = null;
+        BufferedOutputStream fout = null;
         try {
-            bin = new BufferedInputStream(new URL(fileURL).openStream());
-            fout = new FileOutputStream(cachedFile);
+            bin = new BufferedInputStream(new URL(fileURL).openStream(), FETCHER_BUFFER_SIZE);
+            fout = new BufferedOutputStream(new FileOutputStream(cachedFile), FETCHER_BUFFER_SIZE);
 
             byte data[] = new byte[FETCHER_BUFFER_SIZE];
             int count;
