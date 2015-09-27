@@ -56,6 +56,10 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         return result;
     }
 
+    public void remove() {
+        // do nothing
+    }
+
     private DirectoryEntryWrapper getNextDirent() {
         CatalogIterator currentCatalog = getCurrentCatalogIterator();
         DirectoryEntryWrapper wrapper = currentCatalog.next();
