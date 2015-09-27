@@ -5,6 +5,7 @@ import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.catalog.exception.CatalogInitializationException;
 import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.common.Common;
+import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.manifest.Manifest;
 import com.molina.cvmfs.manifest.exception.ManifestException;
@@ -59,19 +60,67 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     /**
-     * Returns the catalog that has the corresponding path
+     * Returns the catalog that has the corresponding path, or the closest
      * @param path the path to search for
-     * @return
+     * @return the currently best fit for the given path, but NOT
+     * necessarily the catalog that contains the given path
      */
-    public Catalog getCatalogForPath(String path) {
+    public Catalog getOpenedCatalogForPath(String path) {
         String bestPath = "";
         for (String catalogPath : openedCatalogs.keySet()) {
             if (path.contains(catalogPath)) {
                 bestPath = catalogPath;
             }
         }
-        Catalog bestFit = openedCatalogs.get(bestPath);
-        return null;
+        return openedCatalogs.get(bestPath);
+    }
+
+    private CatalogReference findBestFit(CatalogReference[] catalogReferences,
+                                         String path) {
+        CatalogReference bestFit = null;
+        for (CatalogReference cr : catalogReferences) {
+            if (cr.getRootPath().contains(path)) {
+                bestFit = cr;
+            }
+        }
+        return bestFit;
+    }
+
+    /**
+     * Retrieves the DirectoryEntry that corresponds to the given path, if exists
+     * @param path the path of the file or directory
+     * @return the DirectoryEntry for the given path, or null if the path is not correct
+     */
+    public DirectoryEntry lookup(String path) {
+        Catalog bestFit = getOpenedCatalogForPath(path);
+        DirectoryEntry result = bestFit.findDirectoryEntry(path);
+        while (result == null) {
+            CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
+            if (bestNested == null)
+                break;
+            bestFit = bestNested.retrieveFrom(this);
+            result = bestFit.findDirectoryEntry(path);
+        }
+        return result;
+    }
+
+    /**
+     * List a directory
+     * @param path path of the directory
+     * @return a List of DirectoryEntry representing all the entries for the
+     * given directory, or null if such a directory does not exist
+     */
+    public List<DirectoryEntry> listDir(String path) {
+        Catalog bestFit = getOpenedCatalogForPath(path);
+        List<DirectoryEntry> result = bestFit.listDirectory(path);
+        while (result == null) {
+            CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
+            if (bestNested == null)
+                break;
+            bestFit = bestNested.retrieveFrom(this);
+            result = bestFit.listDirectory(path);
+        }
+        return result != null ? result : new ArrayList<DirectoryEntry>();
     }
 
     public Catalog getMountedCatalog(String path) {
