@@ -110,7 +110,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * @return a List of DirectoryEntry representing all the entries for the
      * given directory, or null if such a directory does not exist
      */
-    public List<DirectoryEntry> listDir(String path) {
+    public List<DirectoryEntry> listDirectory(String path) {
         Catalog bestFit = getOpenedCatalogForPath(path);
         List<DirectoryEntry> result = bestFit.listDirectory(path);
         while (result == null) {
