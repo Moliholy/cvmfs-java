@@ -89,9 +89,10 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     /**
      * Retrieves the DirectoryEntry that corresponds to the given path, if exists
      * @param path the path of the file or directory
+     * @param followSymlink flag to indicate if symlinks should be followed
      * @return the DirectoryEntry for the given path, or null if the path is not correct
      */
-    public DirectoryEntry lookup(String path) {
+    public DirectoryEntry lookup(String path, boolean followSymlink) {
         Catalog bestFit = getOpenedCatalogForPath(path);
         DirectoryEntry result = bestFit.findDirectoryEntry(path);
         while (result == null) {
@@ -101,7 +102,22 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             bestFit = bestNested.retrieveFrom(this);
             result = bestFit.findDirectoryEntry(path);
         }
+        if (followSymlink && result != null && result.isSymplink()) {
+            String newPath = Common.canonicalizePath(path +
+                    File.separator + result.getSymlink());
+            result = lookup(newPath, true);
+        }
         return result;
+    }
+
+    /**
+     * Retrieves the DirectoryEntry that corresponds to the given path, if exists.
+     * Symlinks will be followed
+     * @param path the path of the file or directory
+     * @return the DirectoryEntry for the given path, or null if the path is not correct
+     */
+    public DirectoryEntry lookup(String path) {
+        return lookup(path, true);
     }
 
     /**
@@ -120,7 +136,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             bestFit = bestNested.retrieveFrom(this);
             result = bestFit.listDirectory(path);
         }
-        return result != null ? result : new ArrayList<DirectoryEntry>();
+        return result;
     }
 
     public Catalog getMountedCatalog(String path) {
