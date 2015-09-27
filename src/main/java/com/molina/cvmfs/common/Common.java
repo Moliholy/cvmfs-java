@@ -1,6 +1,8 @@
 package com.molina.cvmfs.common;
 
 import javax.crypto.Mac;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -34,6 +36,17 @@ public class Common {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static String canonicalizePath(String path) {
+        if (path == null || path.isEmpty())
+            return "";
+        try {
+            return new URI(path).normalize().getPath();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public static PathHash splitMd5(byte[] md5Digest) {

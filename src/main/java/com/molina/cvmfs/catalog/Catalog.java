@@ -10,8 +10,6 @@ import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
@@ -76,17 +74,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             sqlQuery = "SELECT path, sha1 FROM nested_catalogs";
         }
         listNestedStatement = createPreparedStatement(sqlQuery);
-    }
-
-    private static String canonicalizePath(String path) {
-        if (path == null || path.isEmpty())
-            return "";
-        try {
-            return new URI(path).normalize().getPath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return "";
-        }
     }
 
     public float getSchema() {
@@ -263,7 +250,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         CatalogReference[] catalogRefs = listNested();
         CatalogReference bestMatch = null;
         int bestMatchScore = 0;
-        String realNeedlePath = canonicalizePath(needlePath);
+        String realNeedlePath = Common.canonicalizePath(needlePath);
         for (CatalogReference nestedCatalog : catalogRefs) {
             if (realNeedlePath.startsWith(nestedCatalog.getRootPath()) &&
                     nestedCatalog.getRootPath().length() > bestMatchScore) {
@@ -281,7 +268,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @return a list with all the DirectoryEntries contained in that path
      */
     public List<DirectoryEntry> listDirectory(String path) {
-        String realPath = canonicalizePath(path);
+        String realPath = Common.canonicalizePath(path);
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             PathHash parentHash = Common.splitMd5(md.digest(realPath.getBytes()));
@@ -380,7 +367,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      * @return the DirectoryEntry that corresponds to path, or null if not found
      */
     public DirectoryEntry findDirectoryEntry(String rootPath) {
-        String realPath = canonicalizePath(rootPath);
+        String realPath = Common.canonicalizePath(rootPath);
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] md5Path = md.digest(realPath.getBytes());
