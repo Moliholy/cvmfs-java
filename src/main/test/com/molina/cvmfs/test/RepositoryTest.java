@@ -1,32 +1,42 @@
 package com.molina.cvmfs.test;
 
-import com.molina.cvmfs.catalog.Catalog;
-import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RepositoryTest {
 
-    private static Repository repo;
+    private static final String TEST_CACHE_PATH = "/tmp/cvmfs_test_cache";
 
-    public static void main(String[] args)
+    private Repository repo;
+
+    @Test
+    public void initialization()
             throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
-        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss");
-        Catalog rootCatalog = repo.retrieveRootCatalog();
-        System.out.println("Downloading the root catalog");
-        retrieveCatalogTree(rootCatalog);
+        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        Assert.assertEquals("boss.cern.ch", repo.getFqrn());
+        Assert.assertEquals(1, repo.getOpenedCatalogs().size());
+        Assert.assertEquals(TEST_CACHE_PATH, repo.getStorageLocation());
+        Assert.assertNotNull(repo.getFetcher());
+        Assert.assertNotNull(repo.retrieveRootCatalog());
+        Assert.assertTrue(repo.close());
     }
 
-    private static void retrieveCatalogTree(Catalog catalog) {
-        CatalogReference[] refs = catalog.listNested();
-        for (CatalogReference ref : refs) {
-            System.out.println("Downloading the catalog in " + ref.getRootPath());
-            Catalog newCatalog = ref.retrieveFrom(repo);
-            retrieveCatalogTree(newCatalog);
-        }
+    @Test
+    private void retrieveCatalogTree()
+            throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        Assert.assertEquals(1, repo.getOpenedCatalogs().size());
+        repo.retrieveCatalogTree();
+        Assert.assertTrue(repo.getOpenedCatalogs().size() > 1);
+        Assert.assertTrue(repo.close());
     }
 }
