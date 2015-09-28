@@ -65,7 +65,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * @return the currently best fit for the given path, but NOT
      * necessarily the catalog that contains the given path
      */
-    public Catalog getOpenedCatalogForPath(String path) {
+    private Catalog getOpenedCatalogForPath(String path) {
         String bestPath = "";
         for (String catalogPath : openedCatalogs.keySet()) {
             if (path.contains(catalogPath)) {
@@ -86,6 +86,19 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         return bestFit;
     }
 
+    private DirectoryEntry lookupPath(String currentPath) {
+        Catalog bestFit = getOpenedCatalogForPath(currentPath);
+        DirectoryEntry result = bestFit.findDirectoryEntry(currentPath);
+        while (result == null) {
+            CatalogReference bestNested = findBestFit(bestFit.listNested(), currentPath);
+            if (bestNested == null)
+                break;
+            bestFit = bestNested.retrieveFrom(this);
+            result = bestFit.findDirectoryEntry(currentPath);
+        }
+        return result;
+    }
+
     /**
      * Retrieves the DirectoryEntry that corresponds to the given path, if exists
      * @param path the path of the file or directory
@@ -93,19 +106,22 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * @return the DirectoryEntry for the given path, or null if the path is not correct
      */
     public DirectoryEntry lookup(String path, boolean followSymlink) {
-        Catalog bestFit = getOpenedCatalogForPath(path);
-        DirectoryEntry result = bestFit.findDirectoryEntry(path);
-        while (result == null) {
-            CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
-            if (bestNested == null)
-                break;
-            bestFit = bestNested.retrieveFrom(this);
-            result = bestFit.findDirectoryEntry(path);
-        }
-        if (followSymlink && result != null && result.isSymplink()) {
-            String newPath = Common.canonicalizePath(path +
-                    File.separator + result.getSymlink());
-            result = lookup(newPath, true);
+        DirectoryEntry result = null;
+        int index = 0;
+        while (index < path.length()) {
+            index = path.indexOf('/', index + 1);
+            String currentPath = path.substring(0, index);
+            result = lookupPath(currentPath);
+            if (result == null)
+                return null;
+            if (result.isSymplink()) {
+                int nextIndex = path.indexOf('/', index + 1);
+                if (nextIndex != -1 || followSymlink) {
+                    nextIndex = nextIndex == -1 ? path.length() : nextIndex;
+                    path = path.substring(0, index + 1) +
+                            result.getSymlink() + path.substring(nextIndex);
+                }
+            }
         }
         return result;
     }
