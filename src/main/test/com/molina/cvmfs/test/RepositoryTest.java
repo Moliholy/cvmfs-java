@@ -9,7 +9,7 @@ import com.molina.cvmfs.rootfile.exception.RootFileException;
 
 import java.io.IOException;
 
-public class TestLoadCatalogs {
+public class RepositoryTest {
 
     private static Repository repo;
 
