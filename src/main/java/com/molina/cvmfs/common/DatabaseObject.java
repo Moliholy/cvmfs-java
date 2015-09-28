@@ -1,6 +1,7 @@
 package com.molina.cvmfs.common;
 
 import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteOpenMode;
 
 import java.io.File;
 import java.sql.*;
@@ -36,6 +37,8 @@ public class DatabaseObject {
         }
         SQLiteConfig config = new SQLiteConfig();
         config.setReadOnly(true);
+        config.setOpenMode(SQLiteOpenMode.NOMUTEX);
+        config.setOpenMode(SQLiteOpenMode.PRIVATECACHE);
         config.setLockingMode(SQLiteConfig.LockingMode.EXCLUSIVE);
         connection = config.createConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
         connection.setAutoCommit(false);
