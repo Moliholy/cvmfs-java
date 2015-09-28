@@ -59,6 +59,15 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         }
     }
 
+    public boolean close() {
+        boolean closed = true;
+        for (Catalog c : openedCatalogs.values()) {
+            if (!c.close())
+                closed = false;
+        }
+        return closed;
+    }
+
     /**
      * Returns the catalog that has the corresponding path, or the closest
      * @param path the path to search for
@@ -191,13 +200,13 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         try {
             manifest = new Manifest(manifestFile);
         } catch (InvalidRootFileSignature invalidRootFileSignature) {
-            System.out.println(invalidRootFileSignature.getMessage());
+            System.err.println(invalidRootFileSignature.getMessage());
         } catch (UnknownManifestField unknownManifestField) {
-            System.out.println(unknownManifestField.getMessage());
+            System.err.println(unknownManifestField.getMessage());
         } catch (IncompleteRootFileSignature incompleteRootFileSignature) {
-            System.out.println(incompleteRootFileSignature.getMessage());
+            System.err.println(incompleteRootFileSignature.getMessage());
         } catch (ManifestValidityError manifestValidityError) {
-            System.out.println(manifestValidityError.getMessage());
+            System.err.println(manifestValidityError.getMessage());
         }
         if (manifest == null)
             throw new ManifestException();
@@ -221,7 +230,10 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             if (br != null)
                 br.close();
         }
+    }
 
+    public Map<String, Catalog> getOpenedCatalogs() {
+        return openedCatalogs;
     }
 
     protected void tryToGetReplicationState() throws IOException {
@@ -275,8 +287,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     public boolean verify(String publicKeyPath) {
-        Whitelist whitelist = retrieveWhitelist();
         try {
+            Whitelist whitelist = retrieveWhitelist();
             Certificate certificate = retrieveCertificate();
             return whitelist.verifySignature(publicKeyPath) &&
                     !whitelist.hasExpired() &&
@@ -288,15 +300,19 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return false;
     }
 
-    protected Whitelist retrieveWhitelist() {
-        return null;
-    }
-
-    public Catalog[] getCatalogs(Catalog rootCatalog) {
+    protected Whitelist retrieveWhitelist() throws IOException {
+        File whitelistFile = fetcher.retrieveRawFile(Common.WHITELIST_NAME);
+        try {
+            return new Whitelist(whitelistFile);
+        } catch (RootFileException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
