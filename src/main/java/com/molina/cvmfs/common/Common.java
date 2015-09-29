@@ -1,6 +1,5 @@
 package com.molina.cvmfs.common;
 
-import javax.crypto.Mac;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;

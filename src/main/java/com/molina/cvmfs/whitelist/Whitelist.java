@@ -122,6 +122,7 @@ public class Whitelist extends RootFile {
 
     /**
      * Checks that all mandatory fields are found in .cvmfspublished
+     *
      * @throws RootFileException if it has been impossible to read the file
      */
     @Override

@@ -24,6 +24,17 @@ import java.util.*;
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
 
+    public static final char CATALOG_ROOT_PREFIX = 'C';
+    protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+            " FROM catalog" +
+            " WHERE parent_1 = ? AND" +
+            " parent_2 = ?" +
+            " ORDER BY name ASC;";
+    protected static final String NESTED_COUNT = "SELECT count(*) FROM nested_catalogs;";
+    protected static final String READ_CHUNK = "SELECT " + Chunk.catalogDatabaseFields() +
+            " FROM chunks WHERE md5path_1 = ? AND md5path_2 = ? ORDER BY offset ASC";
+    protected static final String FIND_MD5_PATH = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
+            " FROM catalog WHERE md5path_1 = ? AND md5path_2 = ? LIMIT 1;";
     protected float schema;
     protected float schemaRevision;
     protected int revision;
@@ -36,18 +47,6 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     private PreparedStatement readChunkStatement;
     private PreparedStatement findMd5PathStatement;
     private PreparedStatement listNestedStatement;
-
-    public static final char CATALOG_ROOT_PREFIX = 'C';
-    protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
-            " FROM catalog" +
-            " WHERE parent_1 = ? AND" +
-            " parent_2 = ?" +
-            " ORDER BY name ASC;";
-    protected static final String NESTED_COUNT = "SELECT count(*) FROM nested_catalogs;";
-    protected static final String READ_CHUNK = "SELECT " + Chunk.catalogDatabaseFields() +
-            " FROM chunks WHERE md5path_1 = ? AND md5path_2 = ? ORDER BY offset ASC";
-    protected static final String FIND_MD5_PATH = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
-            " FROM catalog WHERE md5path_1 = ? AND md5path_2 = ? LIMIT 1;";
 
     public Catalog(File databaseFile, String catalogHash)
             throws SQLException, CatalogInitializationException {

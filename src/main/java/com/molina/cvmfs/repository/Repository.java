@@ -59,6 +59,11 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         }
     }
 
+    public Repository(String source) throws IOException, RootFileException,
+            FailedToLoadSourceException, CacheDirectoryNotFound {
+        this(source, Files.createTempDirectory("cache.").toFile().getAbsolutePath());
+    }
+
     public boolean unloadCatalogs() {
         boolean closed = true;
         for (Catalog c : openedCatalogs.values()) {
@@ -72,6 +77,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * Returns the catalog that has the corresponding path, or the closest
+     *
      * @param path the path to search for
      * @return the currently best fit for the given path, but NOT
      * necessarily the catalog that contains the given path
@@ -112,7 +118,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * Retrieves the DirectoryEntry that corresponds to the given path, if exists
-     * @param path the path of the file or directory
+     *
+     * @param path          the path of the file or directory
      * @param followSymlink flag to indicate if symlinks should be followed
      * @return the DirectoryEntry for the given path, or null if the path is not correct
      */
@@ -140,6 +147,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     /**
      * Retrieves the DirectoryEntry that corresponds to the given path, if exists.
      * Symlinks will be followed
+     *
      * @param path the path of the file or directory
      * @return the DirectoryEntry for the given path, or null if the path is not correct
      */
@@ -149,6 +157,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     /**
      * List a directory
+     *
      * @param path path of the directory
      * @return a List of DirectoryEntry representing all the entries for the
      * given directory, or null if such a directory does not exist
@@ -173,11 +182,6 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             }
         }
         return null;
-    }
-
-    public Repository(String source) throws IOException, RootFileException,
-            FailedToLoadSourceException, CacheDirectoryNotFound {
-        this(source, Files.createTempDirectory("cache.").toFile().getAbsolutePath());
     }
 
     private void determineSource(String source, String cacheDirectory)

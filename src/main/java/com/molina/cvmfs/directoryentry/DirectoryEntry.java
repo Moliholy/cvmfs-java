@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 /**
  * @author Jose Molina Colmenero
- *         <p/>
+ *         <p>
  *         Wrapper around a DirectoryEntry as it is saved in the Catalogs
  */
 public class DirectoryEntry {
