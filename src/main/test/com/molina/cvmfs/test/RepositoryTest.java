@@ -27,7 +27,7 @@ public class RepositoryTest {
         Assert.assertEquals(TEST_CACHE_PATH, repo.getStorageLocation());
         Assert.assertNotNull(repo.getFetcher());
         Assert.assertNotNull(repo.retrieveRootCatalog());
-        Assert.assertTrue(repo.close());
+        Assert.assertTrue(repo.unloadCatalogs());
     }
 
     @Test
@@ -37,6 +37,6 @@ public class RepositoryTest {
         Assert.assertEquals(1, repo.getOpenedCatalogs().size());
         repo.retrieveCatalogTree();
         Assert.assertTrue(repo.getOpenedCatalogs().size() > 1);
-        Assert.assertTrue(repo.close());
+        Assert.assertTrue(repo.unloadCatalogs());
     }
 }
