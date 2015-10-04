@@ -357,6 +357,18 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         return retrieveCatalog(manifest.getRootCatalog());
     }
 
+    public File getFile(String path) {
+        DirectoryEntry result = lookup(path);
+        if (result != null && result.isFile()) {
+            try {
+                return retrieveObject(result.contentHashString());
+            } catch (FileNotFoundInRepositoryException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     /**
      * Recursively walk down the Catalogs and find the best fit for a path
      *
