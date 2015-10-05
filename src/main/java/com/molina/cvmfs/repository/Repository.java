@@ -57,6 +57,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         } catch (IOException e) {
             System.err.println("Couldn't retrieve all replication data");
         }
+        // load the root catalog to be able to perform operations
+        retrieveRootCatalog();
     }
 
     public Repository(String source) throws IOException, RootFileException,
@@ -83,13 +85,15 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * necessarily the catalog that contains the given path
      */
     private Catalog getOpenedCatalogForPath(String path) {
-        String bestPath = "";
-        for (String catalogPath : openedCatalogs.keySet()) {
-            if (path.contains(catalogPath)) {
-                bestPath = catalogPath;
+        Catalog bestCatalog = retrieveRootCatalog();
+        int maxLength = 0;
+        for (Catalog catalog : openedCatalogs.values()) {
+            int currentLength = path.indexOf(catalog.getRootPrefix());
+            if (currentLength > maxLength) {
+                bestCatalog = catalog;
             }
         }
-        return openedCatalogs.get(bestPath);
+        return bestCatalog;
     }
 
     private CatalogReference findBestFit(CatalogReference[] catalogReferences,
@@ -104,6 +108,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     private DirectoryEntry lookupPath(String currentPath) {
+        if (currentPath.equals("/"))
+            currentPath = "";
         Catalog bestFit = getOpenedCatalogForPath(currentPath);
         DirectoryEntry result = bestFit.findDirectoryEntry(currentPath);
         while (result == null) {
@@ -126,8 +132,12 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     public DirectoryEntry lookup(String path, boolean followSymlink) {
         DirectoryEntry result = null;
         int index = 0;
+        if (path == null || path.equals(""))
+            path = "/";
         while (index < path.length()) {
             index = path.indexOf('/', index + 1);
+            if (index < 0)
+                index = 1;
             String currentPath = path.substring(0, index);
             result = lookupPath(currentPath);
             if (result == null)
