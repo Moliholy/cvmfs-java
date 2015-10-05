@@ -1,5 +1,6 @@
 package com.molina.cvmfs.test;
 
+import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
@@ -31,12 +32,20 @@ public class RepositoryTest {
     }
 
     @Test
-    private void retrieveCatalogTree()
+    public void retrieveCatalogTree()
             throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
         Assert.assertEquals(1, repo.getOpenedCatalogs().size());
         repo.retrieveCatalogTree();
         Assert.assertTrue(repo.getOpenedCatalogs().size() > 1);
         Assert.assertTrue(repo.unloadCatalogs());
+    }
+
+    @Test
+    public void lookup() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        DirectoryEntry result = repo.lookup("/");
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isDirectory());
     }
 }
