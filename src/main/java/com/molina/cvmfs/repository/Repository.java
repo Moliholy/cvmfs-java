@@ -71,9 +71,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         for (Catalog c : openedCatalogs.values()) {
             if (!c.close())
                 closed = false;
-            else if (!c.getHash().equals(retrieveRootCatalog().getHash()))
-                openedCatalogs.remove(c.getHash());
         }
+        openedCatalogs.clear();
         return closed;
     }
 
