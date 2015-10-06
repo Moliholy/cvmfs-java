@@ -268,6 +268,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     public List<DirectoryEntry> listDirectory(String path) {
         String realPath = Common.canonicalizePath(path);
+        if (realPath.equals("/"))
+            realPath = "";
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             PathHash parentHash = Common.splitMd5(md.digest(realPath.getBytes()));
@@ -335,9 +337,12 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
 
     private DirectoryEntry makeDirectoryEntry(ResultSet rs)
             throws SQLException {
-        DirectoryEntry dirent = new DirectoryEntry(rs);
-        readChunks(dirent);
-        return dirent;
+        if (rs != null && !rs.isClosed()) {
+            DirectoryEntry dirent = new DirectoryEntry(rs);
+            readChunks(dirent);
+            return dirent;
+        }
+        return null;
     }
 
     /**

@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryTest {
@@ -54,5 +55,13 @@ public class RepositoryTest {
 
         result = repo.lookup("/.-.");
         Assert.assertNull(result);
+    }
+
+    @Test
+    public void list() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        List<DirectoryEntry> result = repo.listDirectory("/");
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.isEmpty());
     }
 }
