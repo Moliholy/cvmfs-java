@@ -130,14 +130,18 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      */
     public DirectoryEntry lookup(String path, boolean followSymlink) {
         DirectoryEntry result = null;
-        int index = 0;
+        int index = -1;
         if (path == null || path.equals(""))
             path = "/";
-        while (index < path.length()) {
+        while (index < path.length() - 1) {
             index = path.indexOf('/', index + 1);
-            if (index < 0)
-                index = 1;
-            String currentPath = path.substring(0, index);
+            String currentPath;
+            if (index < 0) {
+                index = path.length();
+                currentPath = path;
+            } else {
+                currentPath = path.substring(0, index);
+            }
             result = lookupPath(currentPath);
             if (result == null)
                 return null;
