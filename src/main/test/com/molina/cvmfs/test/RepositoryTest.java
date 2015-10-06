@@ -37,7 +37,7 @@ public class RepositoryTest {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
         Assert.assertEquals(1, repo.getOpenedCatalogs().size());
         repo.retrieveCatalogTree();
-        Assert.assertTrue(repo.getOpenedCatalogs().size() > 1);
+        Assert.assertFalse(repo.getOpenedCatalogs().isEmpty());
         Assert.assertTrue(repo.unloadCatalogs());
     }
 
@@ -47,5 +47,12 @@ public class RepositoryTest {
         DirectoryEntry result = repo.lookup("/");
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isDirectory());
+
+        result = repo.lookup("");
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isDirectory());
+
+        result = repo.lookup("/.-.");
+        Assert.assertNull(result);
     }
 }
