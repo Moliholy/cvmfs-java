@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -63,5 +64,19 @@ public class RepositoryTest {
         List<DirectoryEntry> result = repo.listDirectory("/");
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isEmpty());
+    }
+
+    @Test
+    public void cat() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        List<DirectoryEntry> result = repo.listDirectory("/");
+        for (DirectoryEntry dirent : result) {
+            if (dirent.isFile()) {
+                File file = repo.getFile("/" + dirent.getName());
+                Assert.assertNotNull(file);
+                Assert.assertTrue(file.exists());
+                Assert.assertTrue(file.isFile());
+            }
+        }
     }
 }
