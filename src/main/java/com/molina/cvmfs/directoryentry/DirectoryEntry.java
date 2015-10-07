@@ -1,5 +1,6 @@
 package com.molina.cvmfs.directoryentry;
 
+import com.molina.cvmfs.common.Common;
 import com.molina.cvmfs.common.PathHash;
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 import com.molina.cvmfs.directoryentry.exception.DirectoryEntryInvalidObject;
@@ -39,7 +40,10 @@ public class DirectoryEntry {
         md5path_2 = resultSet.getLong("md5path_2");
         parent_1 = resultSet.getLong("parent_1");
         parent_2 = resultSet.getLong("parent_2");
-        contentHash = resultSet.getString("hash");
+        byte[] hashBytes = resultSet.getBytes("hash");
+        if (hashBytes != null) {
+            contentHash = Common.binaryBufferToHexString(hashBytes);
+        }
         flags = resultSet.getInt("flags");
         size = resultSet.getInt("size");
         mode = resultSet.getInt("mode");
