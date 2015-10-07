@@ -345,7 +345,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     public Certificate retrieveCertificate()
             throws FileNotFoundInRepositoryException, CertificateException, FileNotFoundException {
-        File certificate = retrieveObject(manifest.getCertificate(), 'X');
+        File certificate = retrieveObject(manifest.getCertificate(),Certificate.CERTIFICATE_ROOT_PREFIX);
         return new Certificate(certificate);
     }
 
@@ -356,14 +356,14 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * @param hash_suffix suffix of the object
      * @return the object, if exists in the repository
      */
-    public File retrieveObject(String objectHash, char hash_suffix) throws FileNotFoundInRepositoryException {
+    public File retrieveObject(String objectHash, String hash_suffix) throws FileNotFoundInRepositoryException {
         String path = "data/" + objectHash.substring(0, 2) + "/" +
                 objectHash.substring(2, objectHash.length()) + hash_suffix;
         return fetcher.retrieveFile(path);
     }
 
     public File retrieveObject(String objectHash) throws FileNotFoundInRepositoryException {
-        return retrieveObject(objectHash, '\0');
+        return retrieveObject(objectHash, "");
     }
 
     public Catalog retrieveRootCatalog() {
@@ -429,7 +429,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     protected Catalog retrieveAndOpenCatalog(String catalogHash) {
         File catalogFile;
         try {
-            catalogFile = retrieveObject(catalogHash, 'C');
+            catalogFile = retrieveObject(catalogHash, Catalog.CATALOG_ROOT_PREFIX);
             Catalog newCatalog = new Catalog(catalogFile, catalogHash);
             openedCatalogs.put(catalogHash, newCatalog);
             return newCatalog;

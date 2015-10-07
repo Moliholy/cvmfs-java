@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
  *         Wraps an X.509 certificate object as stored in CVMFS repositories
  */
 public class Certificate {
+    public static final String CERTIFICATE_ROOT_PREFIX = "X";
     protected File certificateFile;
     protected X509Certificate opensslCertificate;
 

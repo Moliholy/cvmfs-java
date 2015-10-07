@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {
 
-    public static final char CATALOG_ROOT_PREFIX = 'C';
+    public static final String CATALOG_ROOT_PREFIX = "C";
     protected static final String LISTING_QUERY = "SELECT " + DirectoryEntry.catalogDatabaseFields() +
             " FROM catalog" +
             " WHERE parent_1 = ? AND" +
