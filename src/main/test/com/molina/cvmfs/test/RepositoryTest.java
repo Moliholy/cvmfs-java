@@ -54,6 +54,10 @@ public class RepositoryTest {
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isDirectory());
 
+        result = repo.lookup("/.cvmfsdirtab");
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isFile());
+
         result = repo.lookup("/.-.");
         Assert.assertNull(result);
     }
@@ -71,6 +75,7 @@ public class RepositoryTest {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
         List<DirectoryEntry> result = repo.listDirectory("/");
         for (DirectoryEntry dirent : result) {
+            Assert.assertNotNull(dirent);
             if (dirent.isFile()) {
                 File file = repo.getFile("/" + dirent.getName());
                 Assert.assertNotNull(file);

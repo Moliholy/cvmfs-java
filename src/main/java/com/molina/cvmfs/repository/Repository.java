@@ -87,9 +87,10 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         Catalog bestCatalog = retrieveRootCatalog();
         int maxLength = 0;
         for (Catalog catalog : openedCatalogs.values()) {
-            int currentLength = path.indexOf(catalog.getRootPrefix());
-            if (currentLength > maxLength) {
+            if (path.indexOf(catalog.getRootPrefix()) == 0 &&
+                    catalog.getRootPrefix().length() > maxLength) {
                 bestCatalog = catalog;
+                maxLength = catalog.getRootPrefix().length();
             }
         }
         return bestCatalog;
@@ -176,16 +177,24 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * given directory, or null if such a directory does not exist
      */
     public List<DirectoryEntry> listDirectory(String path) {
-        Catalog bestFit = getOpenedCatalogForPath(path);
-        List<DirectoryEntry> result = bestFit.listDirectory(path);
-        while (result == null) {
-            CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
-            if (bestNested == null)
-                break;
-            bestFit = bestNested.retrieveFrom(this);
-            result = bestFit.listDirectory(path);
+        DirectoryEntry dirent = lookup(path);
+        if (dirent != null && dirent.isDirectory()) {
+            Catalog bestFit;
+            if (!dirent.isNestedCatalogMountpoint())
+                bestFit = getOpenedCatalogForPath(path);
+            else
+                bestFit = retrieveCatalogForPath(path);
+            List<DirectoryEntry> result = bestFit.listDirectory(path);
+            while (result == null) {
+                CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
+                if (bestNested == null)
+                    break;
+                bestFit = bestNested.retrieveFrom(this);
+                result = bestFit.listDirectory(path);
+            }
+            return result;
         }
-        return result;
+        return null;
     }
 
     public Catalog getMountedCatalog(String path) {
