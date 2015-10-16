@@ -126,10 +126,9 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
      * Retrieves the DirectoryEntry that corresponds to the given path, if exists
      *
      * @param path          the path of the file or directory
-     * @param followSymlink flag to indicate if symlinks should be followed
      * @return the DirectoryEntry for the given path, or null if the path is not correct
      */
-    public DirectoryEntry lookup(String path, boolean followSymlink) {
+    public DirectoryEntry lookup(String path) {
         DirectoryEntry result = null;
         int index = -1;
         if (path == null || path.equals(""))
@@ -146,27 +145,8 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
             result = lookupPath(currentPath);
             if (result == null)
                 return null;
-            if (result.isSymplink()) {
-                int nextIndex = path.indexOf('/', index + 1);
-                if (nextIndex != -1 || followSymlink) {
-                    nextIndex = nextIndex == -1 ? path.length() : nextIndex;
-                    path = path.substring(0, index + 1) +
-                            result.getSymlink() + path.substring(nextIndex);
-                }
-            }
         }
         return result;
-    }
-
-    /**
-     * Retrieves the DirectoryEntry that corresponds to the given path, if exists.
-     * Symlinks will be followed
-     *
-     * @param path the path of the file or directory
-     * @return the DirectoryEntry for the given path, or null if the path is not correct
-     */
-    public DirectoryEntry lookup(String path) {
-        return lookup(path, true);
     }
 
     /**
