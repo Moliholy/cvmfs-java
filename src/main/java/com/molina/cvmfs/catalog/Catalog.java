@@ -405,6 +405,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             findMd5PathStatement.setLong(1, pathHash.getHash1());
             findMd5PathStatement.setLong(2, pathHash.getHash2());
             rs = findMd5PathStatement.executeQuery();
+            rs.next();
             return makeDirectoryEntry(rs);
         } catch (SQLException e) {
             e.printStackTrace();
