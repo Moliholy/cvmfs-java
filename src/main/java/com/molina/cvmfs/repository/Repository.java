@@ -14,7 +14,8 @@ import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
-import com.molina.cvmfs.repository.fetcher.Fetcher;
+import com.molina.cvmfs.fetcher.Fetcher;
+import com.molina.cvmfs.revision.RevisionIterator;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
@@ -433,6 +434,6 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     public Iterator<DirectoryEntryWrapper> iterator() {
-        return new RepositoryIterator(this);
+        return new RevisionIterator(this);
     }
 }

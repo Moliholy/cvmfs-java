@@ -1,4 +1,4 @@
-package com.molina.cvmfs.repository.fetcher;
+package com.molina.cvmfs.fetcher;
 
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;

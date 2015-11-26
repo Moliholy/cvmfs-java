@@ -1,10 +1,11 @@
-package com.molina.cvmfs.repository;
+package com.molina.cvmfs.revision;
 
 import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
+import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
 
 import java.util.Deque;
@@ -14,12 +15,12 @@ import java.util.LinkedList;
 /**
  * Iterates through all directory entries in a whole Repository
  */
-public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
+public class RevisionIterator implements Iterator<DirectoryEntryWrapper> {
 
     private Repository repository;
     private Deque<CatalogIterator> catalogStack;
 
-    public RepositoryIterator(Repository repository, String catalogHash) {
+    public RevisionIterator(Repository repository, String catalogHash) {
         this.repository = repository;
         this.catalogStack = new LinkedList<CatalogIterator>();
         Catalog rootCatalog;
@@ -31,7 +32,7 @@ public class RepositoryIterator implements Iterator<DirectoryEntryWrapper> {
         pushCatalog(rootCatalog);
     }
 
-    public RepositoryIterator(Repository repository) {
+    public RevisionIterator(Repository repository) {
         this(repository, null);
     }
 
