@@ -5,7 +5,6 @@ import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
-import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.NestedCatalogNotFoundException;
 
 import java.util.Deque;
