@@ -99,8 +99,8 @@ public class DatabaseObject {
         while (rs.next()) {
             result.put(rs.getString(1), rs.getObject(2));
         }
-        rs.close();
         rs.getStatement().close();
+        rs.close();
         return result;
     }
 
