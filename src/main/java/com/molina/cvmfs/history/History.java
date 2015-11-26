@@ -65,7 +65,7 @@ public class History extends DatabaseObject {
         while (results.next()) {
             tags.add(new RevisionTag(results));
         }
-        results.getStatement().close();
+        statement.close();
         results.close();
         return tags;
     }
