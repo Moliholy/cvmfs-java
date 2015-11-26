@@ -4,7 +4,7 @@ import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
 /**
  * @author Jose Molina Colmenero
- *         <p>
+ *         <p/>
  *         Wrapper around file chunks in the CVMFS catalogs
  */
 public class Chunk {

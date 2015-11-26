@@ -16,7 +16,7 @@ import java.util.Date;
 
 /**
  * @author Jose Molina Colmenero
- *         <p>
+ *         <p/>
  *         Wraps information from .cvmfspublished
  */
 public class Manifest extends RootFile {

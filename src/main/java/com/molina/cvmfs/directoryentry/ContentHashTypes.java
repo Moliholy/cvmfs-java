@@ -2,7 +2,7 @@ package com.molina.cvmfs.directoryentry;
 
 /**
  * @author Jose Molina Colmenero
- *         <p>
+ *         <p/>
  *         Enumeration of supported content hash types
  */
 public class ContentHashTypes {

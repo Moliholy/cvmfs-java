@@ -137,6 +137,7 @@ public class DatabaseObject {
 
     /**
      * Create a new statement for this database
+     *
      * @return the ResultSet obtained after executing the query
      */
     public Statement createStatement() throws SQLException {

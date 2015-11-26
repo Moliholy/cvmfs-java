@@ -7,7 +7,6 @@ import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.repository.exception.RepositoryNotFoundException;
 import com.molina.cvmfs.revision.Revision;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

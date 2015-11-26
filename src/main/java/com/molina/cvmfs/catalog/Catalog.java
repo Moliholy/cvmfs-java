@@ -19,7 +19,7 @@ import java.util.*;
 
 /**
  * @author Jose Molina Colmenero
- *         <p>
+ *         <p/>
  *         Wraps the basic functionality of CernVM-FS Catalogs
  */
 public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWrapper> {

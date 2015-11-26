@@ -14,9 +14,9 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Jose Molina Colmenero
- *         <p>
+ *         <p/>
  *         Base class for CernVM-FS repository's signed 'root files'
- *         <p>
+ *         <p/>
  *         A CernVM-FS repository has essential 'root files' that have a defined name and
  *         serve as entry points into the repository.
  *         Namely the manifest (.cvmfspublished) and the whitelist (.cvmfswhitelist) that
