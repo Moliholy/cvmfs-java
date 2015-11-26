@@ -16,12 +16,12 @@ public class RevisionTag {
     private String description;
 
     public RevisionTag(ResultSet rs) throws SQLException {
-        name = rs.getString(0);
-        hash = rs.getString(1);
-        revision = rs.getInt(2);
-        timestamp = rs.getLong(3);
-        channel = rs.getInt(4);
-        description = rs.getString(5);
+        name = rs.getString(1);
+        hash = rs.getString(2);
+        revision = rs.getInt(3);
+        timestamp = rs.getLong(4);
+        channel = rs.getInt(5);
+        description = rs.getString(6);
     }
 
     private static String databaseFields() {
