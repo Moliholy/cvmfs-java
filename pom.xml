@@ -41,11 +41,6 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <!--<mainClass>com.molina.cvmfs.MainTest</mainClass>-->
-                        </manifest>
-                    </archive>
                 </configuration>
                 <executions>
                     <execution>
