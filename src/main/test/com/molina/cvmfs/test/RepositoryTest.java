@@ -4,7 +4,10 @@ import com.molina.cvmfs.directoryentry.DirectoryEntry;
 import com.molina.cvmfs.repository.Repository;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
+import com.molina.cvmfs.repository.exception.RepositoryNotFoundException;
+import com.molina.cvmfs.revision.Revision;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,63 +24,62 @@ public class RepositoryTest {
 
     private Repository repo;
 
+    public RepositoryTest() throws IOException {
+        File cache = new File(TEST_CACHE_PATH);
+        FileUtils.deleteDirectory(cache);
+        cache.mkdir();
+    }
+
     @Test
     public void initialization()
-            throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+            throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException, RepositoryNotFoundException {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
+        Revision rev = repo.getCurrentRevision();
         Assert.assertEquals("boss.cern.ch", repo.getFqrn());
-        Assert.assertEquals(1, repo.getOpenedCatalogs().size());
-        Assert.assertEquals(TEST_CACHE_PATH, repo.getStorageLocation());
+        Assert.assertEquals(0, repo.getOpenedCatalogs().size());
         Assert.assertNotNull(repo.getFetcher());
-        Assert.assertNotNull(repo.retrieveRootCatalog());
+        Assert.assertNotNull(rev.retrieveRootCatalog());
         Assert.assertTrue(repo.unloadCatalogs());
     }
 
     @Test
-    public void retrieveCatalogTree()
-            throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+    public void lookup() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException, RepositoryNotFoundException {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
-        Assert.assertEquals(1, repo.getOpenedCatalogs().size());
-        repo.retrieveCatalogTree();
-        Assert.assertFalse(repo.getOpenedCatalogs().isEmpty());
-        Assert.assertTrue(repo.unloadCatalogs());
-    }
-
-    @Test
-    public void lookup() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
-        repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
-        DirectoryEntry result = repo.lookup("/");
+        Revision rev = repo.getCurrentRevision();
+        DirectoryEntry result = rev.lookup("/");
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isDirectory());
 
-        result = repo.lookup("");
+        result = rev.lookup("");
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isDirectory());
 
-        result = repo.lookup("/.cvmfsdirtab");
+        result = rev.lookup("/.cvmfsdirtab");
         Assert.assertNotNull(result);
         Assert.assertTrue(result.isFile());
 
-        result = repo.lookup("/.-.");
+        result = rev.lookup("/.-.");
         Assert.assertNull(result);
     }
 
     @Test
-    public void list() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+    public void list() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException, RepositoryNotFoundException {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
-        List<DirectoryEntry> result = repo.listDirectory("/");
+        Revision rev = repo.getCurrentRevision();
+        List<DirectoryEntry> result = rev.listDirectory("/");
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isEmpty());
     }
 
     @Test
-    public void cat() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException {
+    public void cat() throws RootFileException, CacheDirectoryNotFound, FailedToLoadSourceException, IOException, RepositoryNotFoundException {
         repo = new Repository("http://cvmfs-stratum-one.cern.ch/opt/boss", TEST_CACHE_PATH);
-        List<DirectoryEntry> result = repo.listDirectory("/");
+        Revision rev = repo.getCurrentRevision();
+        List<DirectoryEntry> result = rev.listDirectory("/");
         for (DirectoryEntry dirent : result) {
             Assert.assertNotNull(dirent);
             if (dirent.isFile()) {
-                File file = repo.getFile("/" + dirent.getName());
+                File file = rev.getFile("/" + dirent.getName());
                 Assert.assertNotNull(file);
                 Assert.assertTrue(file.exists());
                 Assert.assertTrue(file.isFile());
