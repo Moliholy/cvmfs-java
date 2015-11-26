@@ -4,9 +4,13 @@ import com.molina.cvmfs.catalog.Catalog;
 import com.molina.cvmfs.catalog.CatalogIterator;
 import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.directoryentry.DirectoryEntry;
+import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
 import com.molina.cvmfs.history.RevisionTag;
 import com.molina.cvmfs.repository.Repository;
+import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
 
+import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -26,6 +30,14 @@ public class Revision {
     public Revision(Repository repository, RevisionTag revisionTag) {
         this.repository = repository;
         this.tag = revisionTag;
+    }
+
+    public Repository getRepository() {
+        return repository;
+    }
+
+    public RevisionTag getTag() {
+        return tag;
     }
 
     public int getRevisionNumber() {
@@ -95,6 +107,19 @@ public class Revision {
         return bestFit.findDirectoryEntry(path);
     }
 
+
+    public File getFile(String path) {
+        DirectoryEntry result = lookup(path);
+        if (result != null && result.isFile()) {
+            try {
+                return repository.retrieveObject(result.contentHashString());
+            } catch (FileNotFoundInRepositoryException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     /**
      * List all the entries in a directory
      *
@@ -109,5 +134,10 @@ public class Revision {
             return bestFit.listDirectory(path);
         }
         return null;
+    }
+
+
+    public Iterator<DirectoryEntryWrapper> iterator() {
+        return new RevisionIterator(this);
     }
 }
