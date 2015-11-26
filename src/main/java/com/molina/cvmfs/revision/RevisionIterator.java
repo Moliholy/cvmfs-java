@@ -17,23 +17,23 @@ import java.util.LinkedList;
  */
 public class RevisionIterator implements Iterator<DirectoryEntryWrapper> {
 
-    private Repository repository;
+    private Revision revision;
     private Deque<CatalogIterator> catalogStack;
 
-    public RevisionIterator(Repository repository, String catalogHash) {
-        this.repository = repository;
+    public RevisionIterator(Revision revision, String catalogHash) {
+        this.revision = revision;
         this.catalogStack = new LinkedList<CatalogIterator>();
         Catalog rootCatalog;
         if (catalogHash == null || catalogHash.isEmpty()) {
-            rootCatalog = repository.retrieveRootCatalog();
+            rootCatalog = revision.retrieveRootCatalog();
         } else {
-            rootCatalog = repository.retrieveCatalog(catalogHash);
+            rootCatalog = revision.retrieveCatalog(catalogHash);
         }
         pushCatalog(rootCatalog);
     }
 
-    public RevisionIterator(Repository repository) {
-        this(repository, null);
+    public RevisionIterator(Revision revision) {
+        this(revision, null);
     }
 
     public DirectoryEntryWrapper next() {
@@ -42,7 +42,7 @@ public class RevisionIterator implements Iterator<DirectoryEntryWrapper> {
         if (dirent.isNestedCatalogMountpoint()) {
             try {
                 String path = result.getPath();
-                Catalog mountedCatalog = repository.getMountedCatalog(path);
+                Catalog mountedCatalog = revision.retrieveCatalog(path);
                 if (mountedCatalog == null) {
                     fetchAndPushCatalog(path);
                 } else {
@@ -77,7 +77,7 @@ public class RevisionIterator implements Iterator<DirectoryEntryWrapper> {
         if (nestedRef == null) {
             throw new NestedCatalogNotFoundException(catalogMountpoint);
         }
-        Catalog newCatalog = nestedRef.retrieveFrom(repository);
+        Catalog newCatalog = nestedRef.retrieveFrom(revision.getRepository());
         pushCatalog(newCatalog);
     }
 
