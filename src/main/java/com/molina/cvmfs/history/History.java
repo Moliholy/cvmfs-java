@@ -5,6 +5,7 @@ import com.molina.cvmfs.common.DatabaseObject;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,11 @@ public class History extends DatabaseObject {
     }
 
     private RevisionTag getTagByQuery(String query) throws SQLException {
-        ResultSet result = runSQL(query);
+        Statement statement = createStatement();
+        ResultSet result = statement.executeQuery(query);
         if (result != null && result.next()) {
             RevisionTag rt = new RevisionTag(result);
-            result.getStatement().close();
+            statement.close();
             result.close();
             return rt;
         }
@@ -57,7 +59,8 @@ public class History extends DatabaseObject {
     }
 
     public List<RevisionTag> listTags() throws SQLException {
-        ResultSet results = runSQL(RevisionTag.sqlQueryAll());
+        Statement statement = createStatement();
+        ResultSet results = statement.executeQuery(RevisionTag.sqlQueryAll());
         List<RevisionTag> tags = new ArrayList<RevisionTag>();
         while (results.next()) {
             tags.add(new RevisionTag(results));
