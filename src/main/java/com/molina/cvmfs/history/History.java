@@ -47,8 +47,11 @@ public class History extends DatabaseObject {
 
     private RevisionTag getTagByQuery(String query) throws SQLException {
         ResultSet result = runSQL(query);
-        if (result != null) {
-            return new RevisionTag(result);
+        if (result != null && result.next()) {
+            RevisionTag rt = new RevisionTag(result);
+            result.getStatement().close();
+            result.close();
+            return rt;
         }
         return null;
     }
@@ -59,6 +62,8 @@ public class History extends DatabaseObject {
         while (results.next()) {
             tags.add(new RevisionTag(results));
         }
+        results.getStatement().close();
+        results.close();
         return tags;
     }
 
