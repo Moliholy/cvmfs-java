@@ -4,6 +4,7 @@ import com.molina.cvmfs.catalog.exception.CounterNotFound;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,7 +70,8 @@ public class CatalogStatistics {
     }
 
     protected void readStatistics() throws SQLException {
-        ResultSet rs = catalog.runSQL("SELECT * FROM statistics ORDER BY counter;");
+        Statement statement = catalog.createStatement();
+        ResultSet rs = statement.executeQuery("SELECT * FROM statistics ORDER BY counter;");
         while (rs.next()) {
             String stat = rs.getString(0);
             Integer value = rs.getInt(1);
@@ -81,7 +83,7 @@ public class CatalogStatistics {
             }
         }
         rs.close();
-        rs.getStatement().close();
+        statement.close();
     }
 
     protected Integer getStat(String statName) throws CounterNotFound {

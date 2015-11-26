@@ -1,5 +1,7 @@
 package com.molina.cvmfs.common;
 
+import android.database.sqlite.SQLiteDatabase;
+import org.sqldroid.SQLDroidDriver;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteOpenMode;
 
@@ -7,6 +9,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Jose Molina Colmenero
@@ -15,6 +18,7 @@ public class DatabaseObject {
 
     protected File databaseFile;
     private Connection connection;
+    private boolean onAndroid;
 
     public DatabaseObject(File databaseFile) throws IllegalStateException, SQLException {
         this.databaseFile = databaseFile;
@@ -25,22 +29,48 @@ public class DatabaseObject {
         }
     }
 
+    private void loadDriver() throws ClassNotFoundException {
+        String driverName = "";
+        if (System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik")) {
+            // we are on android
+            // this library can be found here: https://github.com/SQLDroid/SQLDroid/
+            Class.forName("org.sqldroid.SQLDroidDriver");
+            onAndroid = true;
+        } else {
+            // we are in normal java
+            Class.forName("org.sqlite.JDBC");
+            onAndroid = false;
+        }
+    }
+
     /**
      * Create and configure a database handle to the Catalog
      */
     protected void openDatabase() throws SQLException {
         try {
-            Class.forName("org.sqlite.JDBC");
+            loadDriver();
         } catch (ClassNotFoundException e) {
             connection = null;
             return;
         }
-        SQLiteConfig config = new SQLiteConfig();
-        config.setReadOnly(true);
-        config.setOpenMode(SQLiteOpenMode.NOMUTEX);
-        config.setOpenMode(SQLiteOpenMode.PRIVATECACHE);
-        config.setLockingMode(SQLiteConfig.LockingMode.EXCLUSIVE);
-        connection = config.createConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
+        String connectionURL = "jdbc:sqlite:" + databaseFile.getAbsolutePath();
+        if (!onAndroid) {
+            SQLiteConfig config = new SQLiteConfig();
+            config.setReadOnly(true);
+            config.setOpenMode(SQLiteOpenMode.NOMUTEX);
+            config.setOpenMode(SQLiteOpenMode.PRIVATECACHE);
+            config.setLockingMode(SQLiteConfig.LockingMode.EXCLUSIVE);
+            connection = config.createConnection(connectionURL);
+        } else {
+            Properties p = new Properties();
+            p.put(SQLDroidDriver.DATABASE_FLAGS,
+                    SQLiteDatabase.CREATE_IF_NECESSARY
+                            | SQLiteDatabase.OPEN_READONLY
+                            | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
+            connection = DriverManager.getConnection(connectionURL, p);
+            connection.setReadOnly(true);
+        }
+        connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
         connection.setAutoCommit(false);
     }
 
@@ -94,24 +124,22 @@ public class DatabaseObject {
      * Retrieve all properties stored in the 'properties' table
      */
     public Map<String, Object> readPropertiesTable() throws SQLException {
-        ResultSet rs = runSQL("SELECT key, value FROM properties;");
+        Statement statement = createStatement();
+        ResultSet rs = statement.executeQuery("SELECT key, value FROM properties;");
         Map<String, Object> result = new HashMap<String, Object>();
         while (rs.next()) {
             result.put(rs.getString(1), rs.getObject(2));
         }
-        rs.getStatement().close();
         rs.close();
+        statement.close();
         return result;
     }
 
     /**
-     * Run an arbitrary SQL query on the catalog database
-     *
-     * @param sqlQuery query to run in the database
+     * Create a new statement for this database
      * @return the ResultSet obtained after executing the query
      */
-    public ResultSet runSQL(String sqlQuery) throws SQLException {
-        Statement statement = connection.createStatement();
-        return statement.executeQuery(sqlQuery);
+    public Statement createStatement() throws SQLException {
+        return connection.createStatement();
     }
 }

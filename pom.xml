@@ -6,7 +6,7 @@
 
     <groupId>CVMFS</groupId>
     <artifactId>java-library</artifactId>
-    <version>0.2.0</version>
+    <version>0.1.0</version>
 
     <dependencies>
         <dependency>
@@ -25,9 +25,14 @@
             <version>1.10.19</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.4</version>
+            <groupId>org.sqldroid</groupId>
+            <artifactId>sqldroid</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>4.1.1.4</version>
         </dependency>
 
     </dependencies>
