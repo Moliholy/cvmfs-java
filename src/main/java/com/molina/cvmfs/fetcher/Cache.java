@@ -17,7 +17,7 @@ public class Cache {
     public Cache(String cacheDirectoryPath) throws CacheDirectoryNotFound, IOException {
         cacheDirectory = new File(cacheDirectoryPath).getAbsoluteFile();
         if (!cacheDirectory.exists()) {
-            cacheDirectory.mkdirs();
+            throw new CacheDirectoryNotFound(cacheDirectory.toString());
         }
         if (cacheDirectory.isDirectory() && cacheDirectory.canWrite()) {
             createCacheStructure();
