@@ -26,8 +26,7 @@ public class RepositoryTest {
 
     public RepositoryTest() throws IOException {
         File cache = new File(TEST_CACHE_PATH);
-        FileUtils.deleteDirectory(cache);
-        cache.mkdir();
+        cache.mkdirs();
     }
 
     @Test
