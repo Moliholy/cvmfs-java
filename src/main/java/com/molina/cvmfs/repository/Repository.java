@@ -5,8 +5,10 @@ import com.molina.cvmfs.catalog.CatalogReference;
 import com.molina.cvmfs.catalog.exception.CatalogInitializationException;
 import com.molina.cvmfs.certificate.Certificate;
 import com.molina.cvmfs.common.Common;
-import com.molina.cvmfs.directoryentry.DirectoryEntry;
-import com.molina.cvmfs.directoryentry.DirectoryEntryWrapper;
+import com.molina.cvmfs.fetcher.Fetcher;
+import com.molina.cvmfs.history.History;
+import com.molina.cvmfs.history.RevisionTag;
+import com.molina.cvmfs.history.exception.HistoryNotFoundException;
 import com.molina.cvmfs.manifest.Manifest;
 import com.molina.cvmfs.manifest.exception.ManifestException;
 import com.molina.cvmfs.manifest.exception.ManifestValidityError;
@@ -14,180 +16,49 @@ import com.molina.cvmfs.manifest.exception.UnknownManifestField;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FailedToLoadSourceException;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
-import com.molina.cvmfs.fetcher.Fetcher;
-import com.molina.cvmfs.revision.RevisionIterator;
+import com.molina.cvmfs.repository.exception.RepositoryNotFoundException;
+import com.molina.cvmfs.revision.Revision;
 import com.molina.cvmfs.rootfile.exception.IncompleteRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.InvalidRootFileSignature;
 import com.molina.cvmfs.rootfile.exception.RootFileException;
 import com.molina.cvmfs.whitelist.Whitelist;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Wrapper around a CVMFS repository representation
  */
-public class Repository implements Iterable<DirectoryEntryWrapper> {
+public class Repository {
     protected Map<String, Catalog> openedCatalogs;
     protected Manifest manifest;
     protected String fqrn;
-    protected String storageLocation;
     protected String type = "unknown";
     protected Date replicatingSince;
     protected Date lastReplication;
     protected boolean replicating;
     protected Fetcher fetcher;
 
-    public Repository(String source, String cacheDirectory)
-            throws FailedToLoadSourceException,
-            IOException, CacheDirectoryNotFound, RootFileException {
-        if (source == null || source.isEmpty())
-            throw new FailedToLoadSourceException("The source cannot be empty");
+    public Repository(Fetcher fetcher) throws IOException, RootFileException {
+        this.fetcher = fetcher;
         openedCatalogs = new HashMap<String, Catalog>();
-        storageLocation = cacheDirectory;
-        determineSource(source, cacheDirectory);
         readManifest();
-        try {
-            tryToGetLastReplicationTimestamp();
-            tryToGetReplicationState();
-        } catch (IOException e) {
-            System.err.println("Couldn't retrieve all replication data");
-        }
-        // load the root catalog to be able to perform operations
-        retrieveRootCatalog();
+        tryToGetLastReplicationTimestamp();
+        tryToGetReplicationState();
     }
 
-    public Repository(String source) throws IOException, RootFileException,
-            FailedToLoadSourceException, CacheDirectoryNotFound {
-        this(source, Files.createTempDirectory("cache.").toFile().getAbsolutePath());
+    public Repository(String source, String cacheDir) throws RepositoryNotFoundException, RootFileException, CacheDirectoryNotFound, IOException, FailedToLoadSourceException {
+        this(getFetcherFromSource(source, cacheDir));
     }
 
-    public boolean unloadCatalogs() {
-        boolean closed = true;
-        for (Catalog c : openedCatalogs.values()) {
-            if (!c.close())
-                closed = false;
-        }
-        openedCatalogs.clear();
-        return closed;
-    }
-
-    /**
-     * Returns the catalog that has the corresponding path, or the closest
-     *
-     * @param path the path to search for
-     * @return the currently best fit for the given path, but NOT
-     * necessarily the catalog that contains the given path
-     */
-    private Catalog getOpenedCatalogForPath(String path) {
-        Catalog bestCatalog = retrieveRootCatalog();
-        int maxLength = 0;
-        for (Catalog catalog : openedCatalogs.values()) {
-            if (path.indexOf(catalog.getRootPrefix()) == 0 &&
-                    catalog.getRootPrefix().length() > maxLength) {
-                bestCatalog = catalog;
-                maxLength = catalog.getRootPrefix().length();
-            }
-        }
-        return bestCatalog;
-    }
-
-    private CatalogReference findBestFit(CatalogReference[] catalogReferences,
-                                         String path) {
-        CatalogReference bestFit = null;
-        for (CatalogReference cr : catalogReferences) {
-            if (cr.getRootPath().contains(path)) {
-                bestFit = cr;
-            }
-        }
-        return bestFit;
-    }
-
-    private DirectoryEntry lookupPath(String currentPath) {
-        if (currentPath.equals("/"))
-            currentPath = "";
-        Catalog bestFit = getOpenedCatalogForPath(currentPath);
-        DirectoryEntry result = bestFit.findDirectoryEntry(currentPath);
-        while (result == null) {
-            CatalogReference bestNested = findBestFit(bestFit.listNested(), currentPath);
-            if (bestNested == null)
-                break;
-            bestFit = bestNested.retrieveFrom(this);
-            result = bestFit.findDirectoryEntry(currentPath);
-        }
-        return result;
-    }
-
-    /**
-     * Retrieves the DirectoryEntry that corresponds to the given path, if exists
-     *
-     * @param path          the path of the file or directory
-     * @return the DirectoryEntry for the given path, or null if the path is not correct
-     */
-    public DirectoryEntry lookup(String path) {
-        DirectoryEntry result = null;
-        int index = -1;
-        if (path == null || path.equals(""))
-            path = "/";
-        while (index < path.length() - 1) {
-            index = path.indexOf('/', index + 1);
-            String currentPath;
-            if (index < 0) {
-                index = path.length();
-                currentPath = path;
-            } else {
-                currentPath = path.substring(0, index);
-            }
-            result = lookupPath(currentPath);
-            if (result == null)
-                return null;
-        }
-        return result;
-    }
-
-    /**
-     * List a directory
-     *
-     * @param path path of the directory
-     * @return a List of DirectoryEntry representing all the entries for the
-     * given directory, or null if such a directory does not exist
-     */
-    public List<DirectoryEntry> listDirectory(String path) {
-        DirectoryEntry dirent = lookup(path);
-        if (dirent != null && dirent.isDirectory()) {
-            Catalog bestFit;
-            if (!dirent.isNestedCatalogMountpoint())
-                bestFit = getOpenedCatalogForPath(path);
-            else
-                bestFit = retrieveCatalogForPath(path);
-            List<DirectoryEntry> result = bestFit.listDirectory(path);
-            while (result == null) {
-                CatalogReference bestNested = findBestFit(bestFit.listNested(), path);
-                if (bestNested == null)
-                    break;
-                bestFit = bestNested.retrieveFrom(this);
-                result = bestFit.listDirectory(path);
-            }
-            return result;
-        }
-        return null;
-    }
-
-    public Catalog getMountedCatalog(String path) {
-        for (Catalog c : openedCatalogs.values()) {
-            if (c.getRootPrefix().equals(path)) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    private void determineSource(String source, String cacheDirectory)
+    private static Fetcher getFetcherFromSource(String source, String cacheDirectory)
             throws FailedToLoadSourceException,
             IOException, CacheDirectoryNotFound {
         String finalSource;
@@ -201,7 +72,28 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         else
             throw new FailedToLoadSourceException(
                     "Repository not found: " + source);
-        fetcher = new Fetcher(finalSource, cacheDirectory);
+        return new Fetcher(finalSource, cacheDirectory);
+    }
+
+    public boolean unloadCatalogs() {
+        boolean closed = true;
+        for (Catalog c : openedCatalogs.values()) {
+            if (!c.close())
+                closed = false;
+        }
+        openedCatalogs.clear();
+        return closed;
+    }
+
+    private CatalogReference findBestFit(CatalogReference[] catalogReferences,
+                                         String path) {
+        CatalogReference bestFit = null;
+        for (CatalogReference cr : catalogReferences) {
+            if (cr.getRootPath().contains(path)) {
+                bestFit = cr;
+            }
+        }
+        return bestFit;
     }
 
     protected void readManifest() throws IOException, RootFileException {
@@ -222,7 +114,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         fqrn = manifest.getRepositoryName();
     }
 
-    protected void tryToGetLastReplicationTimestamp() throws IOException {
+    protected void tryToGetLastReplicationTimestamp() {
         BufferedReader br = null;
         lastReplication = new Date(0);
         try {
@@ -235,31 +127,37 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
                 type = "stratum1";
         } catch (ParseException e) {
             lastReplication = null;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             if (br != null)
-                br.close();
+                try {
+                    br.close();
+                } catch (IOException e) {
+                }
         }
     }
 
-    public Map<String, Catalog> getOpenedCatalogs() {
-        return openedCatalogs;
-    }
-
-    protected void tryToGetReplicationState() throws IOException {
+    protected void tryToGetReplicationState() {
         BufferedReader br = null;
         try {
-            replicating = false;
             File file = fetcher.retrieveRawFile(Common.REPLICATING_NAME);
+            replicating = false;
             br = new BufferedReader(new FileReader(file));
             String dateString = br.readLine();
             replicating = true;
             replicatingSince = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy",
                     Locale.ENGLISH).parse(dateString);
+        } catch (IOException e) {
         } catch (ParseException e) {
-            replicatingSince = null;
         } finally {
             if (br != null)
-                br.close();
+                try {
+                    br.close();
+                } catch (IOException e) {
+                }
         }
     }
 
@@ -281,10 +179,6 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     public boolean isReplicating() {
         return replicating;
-    }
-
-    public String getStorageLocation() {
-        return storageLocation;
     }
 
     public Fetcher getFetcher() {
@@ -326,7 +220,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
     }
 
     public boolean hasRepositoryType() {
-        return !type.equals("unknown");
+        return type != null && !type.equals("unknown");
     }
 
     public boolean hasHistory() {
@@ -335,7 +229,7 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     public Certificate retrieveCertificate()
             throws FileNotFoundInRepositoryException, CertificateException, FileNotFoundException {
-        File certificate = retrieveObject(manifest.getCertificate(),Certificate.CERTIFICATE_ROOT_PREFIX);
+        File certificate = retrieveObject(manifest.getCertificate(), Certificate.CERTIFICATE_ROOT_PREFIX);
         return new Certificate(certificate);
     }
 
@@ -354,43 +248,6 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
 
     public File retrieveObject(String objectHash) throws FileNotFoundInRepositoryException {
         return retrieveObject(objectHash, "");
-    }
-
-    public Catalog retrieveRootCatalog() {
-        return retrieveCatalog(manifest.getRootCatalog());
-    }
-
-    public File getFile(String path) {
-        DirectoryEntry result = lookup(path);
-        if (result != null && result.isFile()) {
-            try {
-                return retrieveObject(result.contentHashString());
-            } catch (FileNotFoundInRepositoryException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Recursively walk down the Catalogs and find the best fit for a path
-     *
-     * @param needlePath path of the catalog
-     * @return the catalog for the given path
-     */
-    public Catalog retrieveCatalogForPath(String needlePath) {
-        Catalog root = retrieveRootCatalog();
-        while (true) {
-            CatalogReference newNestedReference = root.findNestedForPath(needlePath);
-            if (newNestedReference == null)
-                break;
-            root = retrieveCatalog(newNestedReference.getCatalogHash());
-        }
-        return root;
-    }
-
-    public void closeCatalog(Catalog catalog) {
-        catalog.close();
     }
 
     /**
@@ -412,10 +269,6 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         }
     }
 
-    public void retrieveCatalogTree() {
-        retrieveCatalogTree(retrieveRootCatalog());
-    }
-
     protected Catalog retrieveAndOpenCatalog(String catalogHash) {
         File catalogFile;
         try {
@@ -433,7 +286,51 @@ public class Repository implements Iterable<DirectoryEntryWrapper> {
         return null;
     }
 
-    public Iterator<DirectoryEntryWrapper> iterator() {
-        return new RevisionIterator(this);
+    public History retrieveHistory() throws HistoryNotFoundException {
+        if (!hasHistory()) {
+            throw new HistoryNotFoundException();
+        }
+        try {
+            File historyDB = retrieveObject(manifest.getHistoryDatabase(), "H");
+            return new History(historyDB);
+        } catch (FileNotFoundInRepositoryException e) {
+            throw new HistoryNotFoundException();
+        } catch (SQLException e) {
+            throw new HistoryNotFoundException();
+        }
+    }
+
+    public Revision getRevision(String tagName) {
+        try {
+            History history = retrieveHistory();
+            RevisionTag rt = history.getTagByName(tagName);
+            return new Revision(this, rt);
+        } catch (HistoryNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Revision getRevision(int revisionNumber) {
+        try {
+            History history = retrieveHistory();
+            RevisionTag rt = history.getTagByRevision(revisionNumber);
+            return new Revision(this, rt);
+        } catch (HistoryNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Revision getCurrentRevision() {
+        return getRevision(manifest.getRevision());
+    }
+
+    public Map<String, Catalog> getOpenedCatalogs() {
+        return openedCatalogs;
     }
 }
