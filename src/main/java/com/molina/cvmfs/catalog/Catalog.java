@@ -239,6 +239,15 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         }
     }
 
+    private boolean pathSanitized(String needlePath, String catalogPath) {
+        int slashesNeedle = needlePath.length() -
+                needlePath.replace("/", "").length();
+        int slashesCatalog = catalogPath.length() -
+                catalogPath.replace("/", "").length();
+        return slashesNeedle == slashesCatalog &&
+                !needlePath.equals(catalogPath);
+    }
+
     /**
      * Find the best matching nested CatalogReference for a given path
      *
@@ -252,7 +261,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         String realNeedlePath = Common.canonicalizePath(needlePath);
         for (CatalogReference nestedCatalog : catalogRefs) {
             if (realNeedlePath.startsWith(nestedCatalog.getRootPath()) &&
-                    nestedCatalog.getRootPath().length() > bestMatchScore) {
+                    nestedCatalog.getRootPath().length() > bestMatchScore &&
+                    pathSanitized(needlePath, nestedCatalog.getRootPath())) {
                 bestMatchScore = nestedCatalog.getRootPath().length();
                 bestMatch = nestedCatalog;
             }
