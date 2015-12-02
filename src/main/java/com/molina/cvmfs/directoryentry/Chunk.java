@@ -2,6 +2,10 @@ package com.molina.cvmfs.directoryentry;
 
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
 
+import org.sqldroid.SQLDroidBlob;
+
+import java.sql.SQLException;
+
 /**
  * @author Jose Molina Colmenero
  *         <p/>
@@ -20,8 +24,17 @@ public class Chunk {
             throw new ChunkFileDoesNotMatch();
         this.offset = (Integer) chunkData[2];
         this.size = (Integer) chunkData[3];
-        this.contentHash = new String((byte[]) chunkData[4]);
         this.contentHashType = contentHashType;
+        if (chunkData[4] instanceof byte[]) {
+            this.contentHash = new String((byte[]) chunkData[4]);
+        } else if (chunkData[4] instanceof SQLDroidBlob){
+            SQLDroidBlob blob = (SQLDroidBlob) chunkData[4];
+            try {
+                this.contentHash = new String(blob.getBytes(0, (int) blob.length()));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String catalogDatabaseFields() {
