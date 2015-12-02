@@ -1,18 +1,22 @@
 package com.molina.cvmfs.fetcher;
 
+import com.molina.cvmfs.common.Common;
 import com.molina.cvmfs.repository.exception.CacheDirectoryNotFound;
 import com.molina.cvmfs.repository.exception.FileNotFoundInRepositoryException;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.zip.InflaterInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 /**
  * @author Jose Molina Colmenero
  */
 public class Fetcher {
-    private static final int FETCHER_BUFFER_SIZE = 2 * 1024 * 1024;  // 2MB
+    private static final int FETCHER_BUFFER_SIZE = 8192;
 
     protected Cache cache;
     protected URL source;
@@ -29,18 +33,49 @@ public class Fetcher {
 
     private static void decompress(InputStream is, File cachedFile) throws IOException {
         byte[] inputBuffer = new byte[FETCHER_BUFFER_SIZE];
+        byte[] outputBuffer = new byte[FETCHER_BUFFER_SIZE * 2];
+        boolean hashesMatch = true;
         FileOutputStream fos = new FileOutputStream(cachedFile);
         BufferedOutputStream dest = new BufferedOutputStream(fos, FETCHER_BUFFER_SIZE);
-        BufferedInputStream decompresserStream = new BufferedInputStream(
-                new InflaterInputStream(new BufferedInputStream(is)), FETCHER_BUFFER_SIZE);
+        BufferedInputStream stream = new BufferedInputStream(is, FETCHER_BUFFER_SIZE);
+        int pos = cachedFile.getAbsolutePath().lastIndexOf(File.separator);
+        String hash = cachedFile.getAbsolutePath()
+                .substring(pos - 2)
+                .replace(File.separator, "")
+                .substring(0, 40);
+        Inflater inflater = new Inflater();
         int bytesRead;
         try {
-            while ((bytesRead = decompresserStream.read(inputBuffer)) != -1) {
-                dest.write(inputBuffer, 0, bytesRead);
+            MessageDigest digest = MessageDigest.getInstance("SHA1");
+            while ((bytesRead = stream.read(inputBuffer)) != -1) {
+                digest.update(inputBuffer, 0, bytesRead);
+                inflater.setInput(inputBuffer, 0, bytesRead);
+                while (!inflater.needsInput()) {
+                    int bytesDecompressed = inflater.inflate(outputBuffer);
+                    dest.write(outputBuffer, 0, bytesDecompressed);
+                }
             }
+            String encodedDigest = Common.binaryBufferToHexString(digest.digest());
+            if (!encodedDigest.equals(hash)) {
+                System.err.println("Downloaded hashes do not match!\n" +
+                "\tDownloaded: " + encodedDigest + "\n" +
+                "\tExpected:   " + hash);
+                hashesMatch = false;
+            }
+        } catch (DataFormatException e) {
+            e.printStackTrace();
+            hashesMatch = false;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            hashesMatch = false;
         } finally {
             dest.close();
-            decompresserStream.close();
+            stream.close();
+            inflater.end();
+            if (!hashesMatch) {
+                // remove the recently downloaded file because it is corrupted
+                cachedFile.delete();
+            }
         }
 
     }
