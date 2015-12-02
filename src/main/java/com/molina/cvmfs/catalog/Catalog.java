@@ -110,7 +110,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     protected void guessRootPrefixIfNeeded() {
         if (rootPrefix == null)
-            rootPrefix = "/";
+            rootPrefix = File.separator;
     }
 
     /**
@@ -169,7 +169,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     }
 
     public boolean isRoot() {
-        return rootPrefix.equals("/");
+        return rootPrefix.equals(File.separator);
     }
 
     /**
@@ -275,7 +275,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
      */
     public List<DirectoryEntry> listDirectory(String path) {
         String realPath = Common.canonicalizePath(path);
-        if (realPath.equals("/"))
+        if (realPath.equals(File.separator))
             realPath = "";
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");

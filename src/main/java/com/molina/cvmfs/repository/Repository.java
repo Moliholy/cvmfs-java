@@ -241,7 +241,7 @@ public class Repository {
      * @return the object, if exists in the repository
      */
     public File retrieveObject(String objectHash, String hash_suffix) throws FileNotFoundInRepositoryException {
-        String path = "data/" + objectHash.substring(0, 2) + "/" +
+        String path = "data" + File.separator + objectHash.substring(0, 2) + File.separator +
                 objectHash.substring(2, objectHash.length()) + hash_suffix;
         return fetcher.retrieveFile(path);
     }

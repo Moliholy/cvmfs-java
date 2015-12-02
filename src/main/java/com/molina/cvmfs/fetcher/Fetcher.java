@@ -108,7 +108,7 @@ public class Fetcher {
     }
 
     protected String makeFileURL(String fileName) {
-        return source.toString() + "/" + fileName;
+        return source.toString() + File.separator + fileName;
     }
 
     protected File retrieveFileFromSource(String fileName) throws FileNotFoundInRepositoryException {
