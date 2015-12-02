@@ -240,8 +240,9 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     }
 
     private boolean pathSanitized(String needlePath, String catalogPath) {
-        return needlePath.length() > catalogPath.length() &&
-                needlePath.charAt(catalogPath.length()) == '/';
+        return needlePath.length() == catalogPath.length() ||
+                (needlePath.length() > catalogPath.length() &&
+                needlePath.charAt(catalogPath.length()) == File.separatorChar);
     }
 
     /**
