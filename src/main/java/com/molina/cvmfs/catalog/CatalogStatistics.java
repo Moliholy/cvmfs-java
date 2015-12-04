@@ -73,8 +73,8 @@ public class CatalogStatistics {
         Statement statement = catalog.createStatement();
         ResultSet rs = statement.executeQuery("SELECT * FROM statistics ORDER BY counter;");
         while (rs.next()) {
-            String stat = rs.getString(0);
-            Integer value = rs.getInt(1);
+            String stat = rs.getString(1);
+            Integer value = rs.getInt(2);
             if (stat.startsWith("self_"))
                 stats.put(stat.substring(5), value);
             else if (stat.startsWith("subtree_")) {
