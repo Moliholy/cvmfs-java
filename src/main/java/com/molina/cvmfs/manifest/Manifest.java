@@ -32,6 +32,7 @@ public class Manifest extends RootFile {
     protected String repositoryName;
     protected String microCatalog;
     protected boolean garbageCollectable;
+    protected boolean alternativeName;
 
     public Manifest(File fileObject) throws RootFileException, IOException {
         super(fileObject);
@@ -92,6 +93,9 @@ public class Manifest extends RootFile {
                 break;
             case 'G':
                 garbageCollectable = data.equals("yes");
+                break;
+            case 'A':
+                alternativeName = data.equals("yes");
                 break;
             default:
                 throw new UnknownManifestField(key);
