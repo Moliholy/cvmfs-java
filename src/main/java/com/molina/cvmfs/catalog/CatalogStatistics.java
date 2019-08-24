@@ -19,7 +19,7 @@ public class CatalogStatistics {
 
     public CatalogStatistics(Catalog catalog) throws SQLException {
         this.catalog = catalog;
-        this.stats = new HashMap<String, Integer>();
+        this.stats = new HashMap<>();
         if (this.catalog.getSchema() >= 2.1)
             readStatistics();
     }

@@ -21,7 +21,7 @@ public class CatalogIterator implements Iterator<DirectoryEntryWrapper> {
 
     public CatalogIterator(Catalog catalog) {
         this.catalog = catalog;
-        this.backlog = new LinkedList<DirectoryEntryWrapper>();
+        this.backlog = new LinkedList<>();
         String rootPath = "";
         if (!this.catalog.isRoot()) {
             rootPath = this.catalog.getRootPrefix();

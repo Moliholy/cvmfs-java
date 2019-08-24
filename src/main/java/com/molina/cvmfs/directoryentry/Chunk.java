@@ -1,7 +1,6 @@
 package com.molina.cvmfs.directoryentry;
 
 import com.molina.cvmfs.directoryentry.exception.ChunkFileDoesNotMatch;
-
 import org.sqldroid.SQLDroidBlob;
 
 import java.sql.SQLException;

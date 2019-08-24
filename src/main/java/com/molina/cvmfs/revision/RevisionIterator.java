@@ -21,7 +21,7 @@ public class RevisionIterator implements Iterator<DirectoryEntryWrapper> {
 
     public RevisionIterator(Revision revision, String catalogHash) {
         this.revision = revision;
-        this.catalogStack = new LinkedList<CatalogIterator>();
+        this.catalogStack = new LinkedList<>();
         Catalog rootCatalog;
         if (catalogHash == null || catalogHash.isEmpty()) {
             rootCatalog = revision.retrieveRootCatalog();

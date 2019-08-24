@@ -36,7 +36,7 @@ public class Whitelist extends RootFile {
      */
     public Whitelist(File fileObject) throws RootFileException, IOException {
         super(fileObject);
-        fingerprints = new ArrayList<String>();
+        fingerprints = new ArrayList<>();
     }
 
     public static Whitelist open(String whitelistPath)

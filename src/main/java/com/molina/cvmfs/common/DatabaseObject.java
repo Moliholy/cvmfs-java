@@ -126,7 +126,7 @@ public class DatabaseObject {
     public Map<String, Object> readPropertiesTable() throws SQLException {
         Statement statement = createStatement();
         ResultSet rs = statement.executeQuery("SELECT key, value FROM properties;");
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         while (rs.next()) {
             result.put(rs.getString(1), rs.getObject(2));
         }

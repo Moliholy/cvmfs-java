@@ -35,7 +35,7 @@ public class DirectoryEntry {
 
     public DirectoryEntry(ResultSet resultSet) throws SQLException {
         // see DirectoryEntry.catalogDatabaseFields()
-        chunks = new ArrayList<Chunk>();
+        chunks = new ArrayList<>();
         md5path_1 = resultSet.getLong("md5path_1");
         md5path_2 = resultSet.getLong("md5path_2");
         parent_1 = resultSet.getLong("parent_1");

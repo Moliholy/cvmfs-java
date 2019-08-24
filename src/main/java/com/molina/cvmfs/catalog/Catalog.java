@@ -206,7 +206,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
     public CatalogReference[] listNested() {
         boolean newVersion = (schema <= 1.2 && schemaRevision > 0);
         ResultSet rs = null;
-        ArrayList<CatalogReference> arr = new ArrayList<CatalogReference>();
+        ArrayList<CatalogReference> arr = new ArrayList<>();
         try {
             rs = listNestedStatement.executeQuery();
             while (rs.next()) {
@@ -282,10 +282,8 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
             PathHash parentHash = Common.splitMd5(md.digest(realPath.getBytes()));
             return listDirectorySplitMd5(parentHash.getHash1(),
                     parentHash.getHash2());
-        } catch (NoSuchAlgorithmException e) {
-            return new ArrayList<DirectoryEntry>();
-        } catch (SQLException e) {
-            return new ArrayList<DirectoryEntry>();
+        } catch (NoSuchAlgorithmException | SQLException e) {
+            return new ArrayList<>();
         }
     }
 
@@ -334,7 +332,7 @@ public class Catalog extends DatabaseObject implements Iterable<DirectoryEntryWr
         listStatement.setLong(1, parent1);
         listStatement.setLong(2, parent2);
         ResultSet rs = listStatement.executeQuery();
-        ArrayList<DirectoryEntry> arr = new ArrayList<DirectoryEntry>();
+        ArrayList<DirectoryEntry> arr = new ArrayList<>();
         while (rs.next()) {
             arr.add(makeDirectoryEntry(rs));
         }

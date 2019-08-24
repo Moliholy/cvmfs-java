@@ -61,7 +61,7 @@ public class History extends DatabaseObject {
     public List<RevisionTag> listTags() throws SQLException {
         Statement statement = createStatement();
         ResultSet results = statement.executeQuery(RevisionTag.sqlQueryAll());
-        List<RevisionTag> tags = new ArrayList<RevisionTag>();
+        List<RevisionTag> tags = new ArrayList<>();
         while (results.next()) {
             tags.add(new RevisionTag(results));
         }

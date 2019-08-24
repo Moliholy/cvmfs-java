@@ -125,13 +125,7 @@ public class Manifest extends RootFile {
         if (publicEntity instanceof Certificate) {
             try {
                 return ((Certificate) publicEntity).verify(signature, signatureChecksum);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            } catch (SignatureException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
+            } catch (NoSuchAlgorithmException | UnsupportedEncodingException | SignatureException | InvalidKeyException e) {
                 e.printStackTrace();
             }
         }

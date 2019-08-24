@@ -62,10 +62,7 @@ public class Fetcher {
                 "\tExpected:   " + hash);
                 hashesMatch = false;
             }
-        } catch (DataFormatException e) {
-            e.printStackTrace();
-            hashesMatch = false;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (DataFormatException | NoSuchAlgorithmException e) {
             e.printStackTrace();
             hashesMatch = false;
         } finally {

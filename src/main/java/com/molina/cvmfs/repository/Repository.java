@@ -48,7 +48,7 @@ public class Repository {
 
     public Repository(Fetcher fetcher) throws IOException, RootFileException {
         this.fetcher = fetcher;
-        openedCatalogs = new HashMap<String, Catalog>();
+        openedCatalogs = new HashMap<>();
         readManifest();
         tryToGetLastReplicationTimestamp();
         tryToGetReplicationState();
@@ -100,14 +100,8 @@ public class Repository {
         File manifestFile = fetcher.retrieveRawFile(Common.MANIFEST_NAME);
         try {
             manifest = new Manifest(manifestFile);
-        } catch (InvalidRootFileSignature invalidRootFileSignature) {
+        } catch (InvalidRootFileSignature | ManifestValidityError | IncompleteRootFileSignature | UnknownManifestField invalidRootFileSignature) {
             System.err.println(invalidRootFileSignature.getMessage());
-        } catch (UnknownManifestField unknownManifestField) {
-            System.err.println(unknownManifestField.getMessage());
-        } catch (IncompleteRootFileSignature incompleteRootFileSignature) {
-            System.err.println(incompleteRootFileSignature.getMessage());
-        } catch (ManifestValidityError manifestValidityError) {
-            System.err.println(manifestValidityError.getMessage());
         }
         if (manifest == null)
             throw new ManifestException();
@@ -127,8 +121,6 @@ public class Repository {
                 type = "stratum1";
         } catch (ParseException e) {
             lastReplication = null;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -150,8 +142,7 @@ public class Repository {
             replicating = true;
             replicatingSince = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy",
                     Locale.ENGLISH).parse(dateString);
-        } catch (IOException e) {
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
         } finally {
             if (br != null)
                 try {
@@ -197,13 +188,9 @@ public class Repository {
                     !whitelist.hasExpired() &&
                     whitelist.containsCertificate(certificate) &&
                     manifest.verifySignature(certificate);
-        } catch (FileNotFoundInRepositoryException e) {
+        } catch (CertificateException | FileNotFoundException e) {
             e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (FileNotFoundInRepositoryException | IOException e) {
             e.printStackTrace();
         }
         return false;
@@ -276,11 +263,7 @@ public class Repository {
             Catalog newCatalog = new Catalog(catalogFile, catalogHash);
             openedCatalogs.put(catalogHash, newCatalog);
             return newCatalog;
-        } catch (FileNotFoundInRepositoryException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (CatalogInitializationException e) {
+        } catch (FileNotFoundInRepositoryException | CatalogInitializationException | SQLException e) {
             e.printStackTrace();
         }
         return null;
@@ -293,9 +276,7 @@ public class Repository {
         try {
             File historyDB = retrieveObject(manifest.getHistoryDatabase(), "H");
             return new History(historyDB);
-        } catch (FileNotFoundInRepositoryException e) {
-            throw new HistoryNotFoundException();
-        } catch (SQLException e) {
+        } catch (FileNotFoundInRepositoryException | SQLException e) {
             throw new HistoryNotFoundException();
         }
     }
@@ -305,9 +286,7 @@ public class Repository {
             History history = retrieveHistory();
             RevisionTag rt = history.getTagByName(tagName);
             return new Revision(this, rt);
-        } catch (HistoryNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (HistoryNotFoundException | SQLException e) {
             e.printStackTrace();
         }
         return null;
@@ -318,9 +297,7 @@ public class Repository {
             History history = retrieveHistory();
             RevisionTag rt = history.getTagByRevision(revisionNumber);
             return new Revision(this, rt);
-        } catch (HistoryNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (HistoryNotFoundException | SQLException e) {
             e.printStackTrace();
         }
         return null;
